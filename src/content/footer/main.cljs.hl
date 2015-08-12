@@ -1,7 +1,8 @@
-(ns content.footer.main)
+(ns content.footer.main
+  (:require [ui.info :as info]))
 
 
 (defelem content [_ _]
   (div :class "col-sm-12"
        (div :style "text-align:center;"
-            "Copyright © Aaron Niskin. All rights reserved.")))
+            (str "© " (.getFullYear info/date) " Aaron Niskin. All rights reserved."))))
