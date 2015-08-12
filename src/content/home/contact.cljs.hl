@@ -106,6 +106,11 @@
          a deeper understanding of the material, or you just want to learn
          something new. If you have any questions, comments or complaints;
          whatever the reason, please feel free to contact me.")
+
+      (p "I tutor everywhere from Miami Beach to Westchester (FIU area). If you
+         need tutoring someplace else, feel free to contact me and I will
+         either try to accommodate your needs myself, or I will do my best to
+         find a tutor who does accommodate your needs.")
       
       (p (span :class "glyphicon glyphicon-earphone") (a :href "tel: 3058946475" "  (305) 894-6475"))
       
