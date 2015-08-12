@@ -1,0 +1,112 @@
+(ns content.home.contact
+  (:require [ui.style :as style]))
+
+(defelem content [attr kids]
+  (style/container
+    (div :class "col-md-8 col-sm-8 col-xs-12"
+      (form 
+        :action "https://docs.google.com/forms/d/16bW8Vz8Z3sjWN1LurIOy3AM64oTXO7eSkzRcVNQYKVo/formResponse" 
+        :method "post" 
+        :id "ss-form" 
+        :target "_self" 
+        :onsubmit ""
+        (style/row
+          (let [good? (cell nil)] (div :class "col-xs-12 col-sm-6 col-md-6"
+                                       (div :class (cell= {:form-group true
+                                                           :has-success false
+                                                           :has-error   false
+                                                           :has-feedback true}) 
+                                            (label :for "entry.1351197672" 
+                                                   :class "control-label" "First Name")
+                                            (input :type "text" 
+                                                   :class "form-control" 
+                                                   :id "entry.1351197672" 
+                                                   :placeholder "First"
+                                                   :aria-describedby "first-nameStatus"
+                                                   :name "entry.1351197672")
+                                            (span :class (cell= {:glyphicon true 
+                                                                 :glyphicon-ok false
+                                                                 :glyphicon-remove false
+                                                                 :form-control-feedback true})
+                                                  :aria-hidden "true")
+                                            (span :id "first-nameStatus" :class "sr-only" "(success)"))))
+          (div :class "col-xs-12 col-sm-6 col-md-6"
+               (div :class (cell= {:form-group true
+                                   :has-success false
+                                   :has-error   false
+                                   :has-feedback true}) 
+                    (label :for "entry_1358483461" 
+                           :class "control-label" "Last Name")
+                    (input :type "text" 
+                           :class "form-control" 
+                           :id "entry_1358483461" 
+                           :placeholder "Last"
+                           :aria-describedby "last-nameStatus"
+                           :name "entry_1358483461")
+                    (span :class (cell= {:glyphicon true 
+                                         :glyphicon-ok false
+                                         :glyphicon-remove false
+                                         :form-control-feedback true})
+                          :aria-hidden "true")
+                    (span :id "last-nameStatus" 
+                          :class "sr-only" "(success)"))))
+        (style/row
+          (div :class "form-group has-feedback col-md-8 col-sm-12 col-xs-12"
+            (label :for "entry_254642901" 
+                   :class "control-label" 
+                   "Email Address")
+            (input :type "email"
+                   :class "form-control" 
+                   :id "entry_254642901" 
+                   :placeholder "Email"
+                   :name "entry_254642901"))
+          (div :class "form-group col-md-4 col-sm-12 col-xs-12"
+            (label :for "entry_1652734510" 
+                   :class "control-label" "Telephone Number")
+            (input :type "tel" 
+                   :class "form-control" 
+                   :id "entry_1652734510" 
+                   :placeholder "Phone"
+                   :name "entry_1652734510")))
+        (style/row 
+          (div :class "form-group col-md-4 col-sm-12 col-xs-12"
+            (label :for "entry_825591887" "Start Date")
+            (input :type "date" 
+                   :class "form-control" 
+                   :id "entry_825591887" 
+                   :placeholder "Date"
+                   :name "entry_825591887"))
+          (div :class "form-group col-md-8 col-sm-12 col-xs-12"
+             (label :for "entry_1486611433" 
+                    "What subject(s) are you inquiring about?")
+             (input :type "text" 
+                    :class "form-control" 
+                    :id "entry_1486611433" 
+                    :placeholder "Subjects"
+                    :name "entry_1486611433")))
+        (div :class "form-group"
+             (label :for "entry_1996187647" 
+                    "Any special considerations or requirements?")
+             (input :type "text" 
+                    :class "form-control" 
+                    :id "entry_1996187647" 
+                    :placeholder "Considerations"
+                    :name "entry_1996187647"))
+        
+        ((div :class "form-group"
+             (button :type "submit" 
+                     :class "form-control" 
+                     :id "submit" 
+                     :text "Submit" 
+                     :value "submit")))
+        ))
+    (div :class "col-md-4 col-sm-4 col-xs-12"
+      (h2 "Get in touch!")
+      (p "Whether you're strugging in a course, doing well in a course but want
+         a deeper understanding of the material, or you just want to learn
+         something new. If you have any questions, comments or complaints;
+         whatever the reason, please feel free to contact me.")
+      
+      (p (span :class "glyphicon glyphicon-earphone") (a :href "tel: 3058946475" "  (305) 894-6475"))
+      
+      (p (span :class "glyphicon glyphicon-envelope") (a :href "mailto: aaron@math-busters.com" "  aaron@math-busters.com")))))

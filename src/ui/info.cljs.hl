@@ -1,0 +1,135 @@
+(ns ui.info
+  (:require [clojure.string :as string]))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Navbar things
+;
+(defc nav-active nil)
+(def nav-height 50)
+(defc scroll-location nil)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Delete upon upgrade to new hoplon
+;
+(defn do-watch
+  ([atom f]
+   (do-watch atom nil f))
+  ([atom init f]
+   (with-let [k (gensym)]
+     (f init @atom)
+     (add-watch atom k (fn [_ _ old new] (f old new))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; submit pull request for hoplon update?
+;
+(defc screen-height (.height (js/jQuery js/window)))
+(defc scroll-top 0)
+
+(defmethod do! :scroll-to
+  [elem _ v]
+  (with-timeout 0
+    (when v
+      (let  [body  (js/jQuery  "body,html")
+             elem  (js/jQuery elem)]
+        (.animate body  (clj->js  {:scrollTop  (- (.-top  (.offset elem)) nav-height)}))))))
+
+
+#_(defmethod do! :js-style
+  [elem _ kvs]
+  (let [e (js/jQuery elem)]
+    (doseq [[k v] kvs] (aset (.. (.style e) (name k) (str v))))))
+
+
+(defmethod do! :scroll-background
+  [elem _ v]
+  (when v
+    (let [elem   (js/jQuery elem)
+          top    (.. elem offset -top)
+          scroll (cell= (str "50% " (/ (- (+ scroll-top screen-height) top) 8) "px"))]
+      (set! (.-backgroundPosition (.-style elem)) scroll))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; For scroll location things (like scroll-spy)
+;
+
+(let [d (js/jQuery js/document)]
+      (on! d :scroll #(reset! scroll-top (.scrollTop d))))
+
+
+(defmethod on! :on-screen
+  [elem k callback]
+  (with-timeout 0
+    (let  [e-top 0
+           e-bot 0
+           s-top 0
+           s-bot 0 ;; compiler nonsense
+           c (cell= (let [e     (js/jQuery elem)
+                          e-top (.. e offset -top)
+                          e-bot (+ e-top (. e height))
+                          s-top (+ 50 scroll-top)
+                          s-bot (+ screen-height s-top)]
+                      (or (<= e-top s-bot e-bot)
+                          (<= e-top s-top e-bot))))]
+      (do-watch c #(callback elem (boolean %2))))))
+
+
+(defmethod on! :on-screen*
+  [elem k callback]
+  (with-timeout 0
+    (let  [e     (js/jQuery elem)
+           e-top (.. e offset -top)
+           e-bot (+ e-top (. e height))
+           begin (cell= (- (+ e-top nav-height) screen-height))
+           end   (cell= (+ e-bot nav-height))
+           prcnt (cell= (/ (- scroll-top begin) (- end begin)))
+           c (cell= (if (<= 0 prcnt 1)
+                        prcnt
+                        nil))]
+      (do-watch c #(callback elem prcnt (boolean %2))))))
+
+
+(defmethod on! :at-top
+  [elem k callback]
+  (with-timeout 0
+    (let  [e-top 0
+           e-bot 0 ;; compiler nonsense
+           c (cell= (let [e     (js/jQuery elem)
+                          e-top (.. e offset -top)
+                          e-bot (+ e-top (. e height))]
+                      (<= e-top (+ 50 scroll-top) e-bot)))]
+      (do-watch c #(callback  (boolean %2))))))
+
+
+(let [w (js/jQuery js/window)]
+  (on! w :resize #(reset! screen-height (.height w))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; General location stuff
+;
+(def home "#!/home/")
+
+(def route* (route-cell home))
+
+(def route (cell= (->> (string/split route* #"/")
+                       (partition 2)
+                       (map (fn [[k v]] [(keyword k) v]))
+                       (into {}))))
+
+(defc= location (route :#!))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Link function
+;

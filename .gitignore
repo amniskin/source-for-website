@@ -1,0 +1,10 @@
+# Ignore file...
+
+# Files I'm currently editing
+*.swp
+
+# Ignore the target directory which will change a lot.
+/target
+
+# Ignore boot repl history file
+.nrepl-history

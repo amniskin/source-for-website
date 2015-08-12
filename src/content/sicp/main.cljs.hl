@@ -1,0 +1,29 @@
+(ns content.sicp.main
+  (:require [ui.style                    :as style]
+            [content.sicp.book-data      :as data]
+            [content.sicp.texts.about    :as about]
+            [content.sicp.texts.ch1      :as ch1]
+            [content.sicp.texts.ch1sect1 :as ch1sect1]
+            [content.sicp.texts.ch1sect2 :as ch1sect2]
+            [content.sicp.texts.ch1sect3 :as ch1sect3]
+            [content.sicp.texts.ch2      :as ch2]
+            [content.sicp.texts.ch2sect1 :as ch2sect1]
+            [content.sicp.texts.ch2sect2 :as ch2sect2]
+            ))
+
+(defelem content [attr kids]
+  (style/page :name "sicp"
+    (style/container
+      (style/sidebar
+        (data/toc))
+      (style/content-with-sidebar
+        (data/container
+          (about/content)
+          (ch1/content)
+          (ch1sect1/content)
+          (ch1sect2/content)
+          (ch1sect3/content)
+          (ch2/content)
+          (ch2sect1/content)
+          (ch2sect2/content)
+          )))))

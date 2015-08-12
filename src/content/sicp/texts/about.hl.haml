@@ -1,0 +1,26 @@
+%clj
+  (ns content.sicp.texts.about
+    (:require-macros
+      [tailrecursion.hoplon.markdown :refer [md]])
+    (:require
+      [tailrecursion.hoplon.markdown :as md]
+      [content.sicp.book-data        :as data]))
+
+%sexp
+  defelem content [attr kids]
+  %data/about
+    %md
+      This site is designed to be used on its own by people who
+      want to learn to program from the textbook, "Structure and 
+      Interpretation of Computer Programs" (SICP) by Harold 
+      Abelson and Gerald Jay Sussman with Julie Sussman. SICP is 
+      licensed under a [Creative Commons Attribution-ShareAlike 
+      4.0 International License]("http://creativecommons.org/licenses/by-sa/4.0/") 
+      by the MIT Press. I have included "translations" of the 
+      textbook into Clojure, and have included Clojure solutions 
+      to the problems.
+
+      If you do not have a Clojure REPL already in place, go 
+      ahead and get [boot](http://boot-clj.com/). Most importantly,
+      Lisp can do it!
+

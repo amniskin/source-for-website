@@ -1,0 +1,29 @@
+(ns content.home.main
+  (:require [ui.style                  :as style]
+            [content.home.highlights   :as highlights]
+            [content.home.contact      :as contact]
+            [content.home.testimonials :as testimonials]
+            [content.home.fiu          :as fiu]
+            [content.home.um           :as um]
+            [content.home.top          :as top]
+            ))
+
+(defelem content [attr kids]
+  (style/page :name "home"
+    (div :class "fade-bg"
+      (top/content) 
+      #_(comment style/jumbotron
+        (style/container
+          (div :class "col col-1g-12 col-md-12 col-sm-12"
+            (h1 "Tutoring")
+            (p "Need a tagline and a title..."))))
+      (style/divider)
+      (highlights/content)
+      (style/divider)
+      (fiu/content)
+      (style/divider)
+      (testimonials/content)
+      (style/divider)
+      (um/content)
+      (style/divider)
+      (contact/content))))

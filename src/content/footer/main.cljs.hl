@@ -1,0 +1,7 @@
+(ns content.footer.main)
+
+
+(defelem content [_ _]
+  (div :class "col-sm-12"
+       (div :style "text-align:center;"
+            "Copyright © Aaron Niskin. All rights reserved.")))

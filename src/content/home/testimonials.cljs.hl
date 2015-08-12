@@ -1,0 +1,76 @@
+(ns content.home.testimonials
+  (:require [ui.style :as style]))
+
+(defelem from [{:keys [name place date]} _]
+  (p :class "small"
+     (str "- " name ", " place " " date)))
+
+(defelem heading [_ kids]
+  (h3 kids))
+
+(defelem review [_ kids]
+  (p kids))
+
+
+(defelem content [attr kids]
+  (style/container
+    (h1 :style "text-align: center;" "What my clients think of me.")
+    (style/divider)
+    (style/row
+      (style/content-bubble
+        (heading "Invaluable Asset")
+        (review "Aaron has been an invaluable asset as a tutor to my nephew. He
+                is very patient, professional, and knowledgeable. He has been
+                able to identify what areas need to be addressed for the best
+                outcome. He is also teaching him study skills, note-taking, and
+                assisting him as a mentor. I feel very fortunate to have found
+                him.") 
+
+        (from :name "Sandra" :place "Miami, Fl" :date "12/02/2014"))
+      (style/content-bubble
+        (heading "A Great Experience")
+        (review "Working with Aaron has been a great experience. He is very
+           knowledgeable and explains hard to understand concepts very well. He
+           is a natural at teaching and a pleasure to work with. Highly
+           recommend!!")
+
+        (from :name "Jasmin" :place "Miami, Fl" :date "09/22/2014"))
+      (style/content-bubble
+        (heading "Very Likeable and Competent Tutor")
+        (review "My son was unsettled by the thought of having a tutor for his HS
+           Calculus course, but he needed some help. Aaron has such a laid back
+           personality that my son was able to focus on the lessons without
+           feeling stressed. Aaron is very knowledgeable and was able to help
+           my son pass his online course with an A!")
+
+        (from :name "Desiree" :place "Miami, Fl" :date "01/04/13")))
+    (style/row
+      (style/content-bubble
+        (heading "Extremely Helpful... One of the Best")
+        (review "Aaron is one of the best calculus tutors I've met so far. He
+                helps you understand the methods and rules of math, and never
+                fails to miss a detail. His ways of teaching are extremely helpful
+                and I would definitely recommend him!")
+
+        (from :name "Abdulla" :place "Miami, FL" :date "10/02/2014"))
+      (style/content-bubble
+        (heading "Great tutor!!")
+        (review "Aaron has tutored me for physics, and has done a great job so
+                far. He is really knowledgeable about the subject and explains
+                things thoroughly. I would recommend him to anyone who not only
+                wants to pass a class, but who wants to understand it. He also
+                really cares about the grades received and is flexible with his
+                tutoring times.")
+
+        (from :name "Paulina" :place "Miami, FL" :date "05/26/2012"))
+      (style/content-bubble
+        (heading "Best Tutor Ever!")
+        (review "Mr. Aaron is a very very patient tutor. When my first lesson
+                was scheduled I was so nervous because the subject (math) was
+                very complicated but he made me feel comfortable. He not only
+                explained me the subject in a very clear way but showed me how
+                to solve all type of math problems. I can truly say that it was
+                the best experience I have ever had with a tutor. ")
+
+        (from :name "Patricia" :place "Miami, FL" :date "02/06/2012")))
+    ))

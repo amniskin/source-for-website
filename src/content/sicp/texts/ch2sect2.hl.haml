@@ -1,0 +1,2193 @@
+%clj
+  (ns content.sicp.texts.ch2sect2
+    (:require-macros [tailrecursion.hoplon.markdown :refer [md]])
+    (:require        [tailrecursion.hoplon.markdown :as md]
+                     [content.sicp.book-data        :as data])) 
+
+%sexp
+  defelem content [_ _]
+  %div
+    %data.sect{:title "Hierarchial Data and the Closure Property"}
+      %md
+        As we have seen, pairs provide a primitive "glue" that we can use to
+        construct compound data objects. [Figure 2.2](#!/sicp/ch/2/fig/2/)
+        shows a standard way to visualize a pair -- in this case, the pair
+        formed by `(cons 1 2)` in Scheme (we're using Scheme again for these
+        examples, but lists are implemented similarly in Clojure, and after
+        all, we don't really care too much about the specifics of their
+        implementation, but rather that they have the characteristics we
+        desire, right?). In this representation, which is called
+        *box-and-pointer notation*, each object is shown as a *pointer* to a
+        box. The box for a primitive object contains a representation of the
+        object. For example, the box for a number contains a numeral. The box
+        for a pair is actually a double box, the left part containing (a
+        pointer to) the `car` of the pair and the right part containing the
+        `cdr`. Note that we're using Scheme for this part. Don't worry though,
+        we'll be back to Clojureland soon enough.
+
+        We have already seen that `cons` can be used to combine not only
+        numbers but pairs as well. (You made use of this fact, or should have,
+        in doing exercises [2.2](#!/sicp/ch/2/ex/2/) and
+        [2.3](#!/sicp/ch/2/ex/3/).) As a consequence, pairs provide a universal
+        building block from which we can construct all sorts of data
+        structures. Figure 2.3 shows two ways to use pairs to combine the
+        numbers 1, 2, 3, and 4.
+
+      %data.fig{:footer "Box-and-pointer representation of (cons 1 2)."}
+      %data.fig{:footer "Two ways to combine 1,2,3, and 4 using pairs."}
+
+      %md
+        The ability to create pairs whose elements are pairs is the essence of
+        list structure's importance as a representational tool. We refer to
+        this ability as the *closure property* of `cons` (`cons` is closed in
+        Clojure as well, but don't just take my word for it, try it out!). In
+        general, an operation for combining data objects satisfies the closure
+        property if the results of combining things with that operation can
+        themselves be combined using the same operation.<<The use of the word
+        "closure" here comes from abstract algebra, where a set of elements is
+        said to be closed under an operation if applying the operation to
+        elements in the set produces an element that is again an element of the
+        set. The Lisp community also (unfortunately) uses the word "closure" to
+        describe a totally unrelated concept: A closure is an implementation
+        technique for representing procedures with free variables. We do not
+        use the word "closure" in this second sense in this book.>> Closure is
+        the key to power in any means of combination because it permits us to
+        create *hierarchical* structures -- structures made up of parts, which
+        themselves are made up of parts, and so on.
+
+        From the outset of chapter 1, we've made essential use of closure in
+        dealing with procedures, because all but the very simplest programs
+        rely on the fact that the elements of a combination can themselves be
+        combinations. In this section, we take up the consequences of closure
+        for compound data. We describe some conventional techniques for using
+        pairs to represent sequences and trees, and we exhibit a graphics
+        language that illustrates closure in a vivid way.<<The notion that a
+        means of combination should satisfy closure is a straightforward idea.
+        Unfortunately, the data combiners provided in many popular programming
+        languages do not satisfy closure, or make closure cumbersome to
+        exploit. In Fortran or Basic, one typically combines data elements by
+        assembling them into arrays -- but one cannot form arrays whose
+        elements are themselves arrays. Pascal and C admit structures whose
+        elements are structures. However, this requires that the programmer
+        manipulate pointers explicitly, and adhere to the restriction that each
+        field of a structure can contain only elements of a prespecified form.
+        Unlike Lisp with its pairs, these languages have no built-in
+        general-purpose glue that makes it easy to manipulate compound data in
+        a uniform way. This limitation lies behind Alan Perlis&#39;s comment in
+        his foreword to this book: "In Pascal the plethora of declarable data
+        structures induces a specialization within functions that inhibits and
+        penalizes casual cooperation. It is better to have 100 functions
+        operate on one data structure than to have 10 functions operate on 10
+        data structures.">>
+
+    %data.subsect{:title "Representing Sequences"}
+      %data.fig{:footer "The sequence 1, 2, 3, 4 represented as a chain of pairs."}
+
+      %md
+        One of the useful structures we can build with pairs is a *sequence* --
+        an ordered collection of data objects. There are, of course, many ways
+        to represent sequences in terms of pairs. One particularly
+        straightforward representation is illustrated in figure 2.4, where the
+        sequence 1, 2, 3, 4 is represented as a chain of pairs. The `car` of
+        each pair is the corresponding item in the chain, and the cdr of the
+        pair is the next pair in the chain. The `cdr` of the final pair signals
+        the end of the sequence by pointing to a distinguished value that is
+        not a pair, represented in box-and-pointer diagrams as a diagonal line
+        and in programs as the value of the variable `nil`. The entire sequence
+        is constructed by nested `cons` operations:
+
+        ```clj
+        (cons 1
+              (cons 2
+                    (cons 3
+                          (cons 4 nil))))
+        ```
+
+        Such a sequence of pairs, formed by nested `cons`es is called a *list*,
+        and Scheme provides a primitive called `list` to help in constructing
+        lists.<<In this book, we use *list* to mean a chain of pairs terminated
+        by the end-of-list marker which is convenient because that is the way
+        they are implemented in Clojure. To test this, type `(= (cons 1 (cons 2
+        nil)) (list 1 2))` to see if they are indeed equal. In contrast, the
+        term *list structure* refers to any data structure made out of pairs,
+        not just to lists.>> The above sequence could be produced by `(list 1 2
+        3 4)`. In general,
+
+        ```clj
+        (list <a1> <a2> ... <an>)
+        ```
+
+        is equivalent to
+
+        ```clj
+        (cons <a1> (cons <a2> (cons ... (cons <an> nil) ...)))
+        ```
+
+        Lisp systems conventionally print lists by printing the sequence of
+        elements, enclosed in parentheses. Thus, the data object in [figure
+        2.4](#!/sicp/ch/2/fig/4/) is printed as `(1 2 3 4)`:
+
+        ```clj
+        (def one-through-four (list 1 2 3 4)
+
+        one-through-four
+        (1 2 3 4)
+        ```
+
+        Be careful not to confuse the expression `(list 1 2 3 4)` with the list
+        `(1 2 3 4)`, which is the result obtained when the expression is
+        evaluated. Attempting to evaluate the expression `(1 2 3 4)` will
+        signal an error when the interpreter tries to apply the procedure 1 to
+        arguments 2,3, and 4.
+
+        We can think of `car` as selecting the first item in the list (as I'm
+        sure you surmised `first` does), and of `cdr` as selecting the sublist
+        consisting of the rest of the items (as does `rest`). This is actually
+        more true in Clojure than in Scheme.<<In Clojure the procedure we would
+        be dealing with is, `rest`, which, given a list returns a new list
+        consisting of all but the first item. A key thing to notice here is
+        that unlike `cdr`, when you supply `rest` with a list, it returns a
+        list. Always. So, `(rest (list 1 2))` returns `(2)`, and `(rest (list
+        1))` would return `()`, the empty list.>> Nested applications of
+        `first` and `rest` can be used to extract the second, third, and
+        subsequent items in the list. Our language, along with `first` has a
+        `second` procedure which, given a list returns the second value. The
+        constructor `cons` makes a list like the original one, but with an
+        additional item at the beginning, but Clojure has a more general
+        version called `conj` built in that works well with other sequential
+        objects. So, as we've seen, prepending things on a list is very cheap
+        (computationally). That is why `conj` prepends things to lists. There
+        are other sequential objects that `conj` operates on and doesn't
+        prepend, but we'll get into that later.
+
+        ```clj
+        (first one-through-four)
+        1
+
+        (rest one-through-four)
+        (2 3 4)
+
+        (first (rest one-through-four))
+        2
+
+        (second one-through-four)
+        2
+
+        (cons 10 one-through-four)
+        (10 1 2 3 4)
+
+        (conj one-through-four 10)
+        (10 1 2 3 4)
+
+        (cons 5 one-through-four)
+        (5 1 2 3 4)
+
+        (conj one-through-four 5)
+        (5 1 2 3 4)
+
+        (conj one-through-four 5 6 7)
+        (7 6 5 1 2 3 4)
+        ```
+
+        Notice in that last one that `conj` put them in backward. That is
+        because `conj` prepends them one by one in the order they appear. The
+        value of `nil`, used to terminate the chain of pairs, in Clojure is
+        only named `nil` for legacy reasons. In Scheme, however, `nil` was a
+        sequence of no elements or the *empty list*. The word *nil* is a
+        contraction of the Latin word *nihil*, which means "nothing".<<It&#39;s
+        remarkable how much energy in the standardization of Lisp dialects has
+        been dissipated in arguments that are literally over nothing: Should
+        `nil` be an ordinary name? Should the value of `nil` be a symbol?
+        Should it be a list? Should it be a pair? In Scheme, `nil` is an
+        ordinary name, which we use in this section as a variable whose value
+        is the end-of-list marker (just as `true` is an ordinary variable that
+        has a true value). Other dialects of Lisp, including Common Lisp, treat
+        nil as a special symbol. The authors of this book, who have endured too
+        many language standardization brawls, would like to avoid the entire
+        issue. Once we have introduced quotation in [section
+        2.3](#!/sicp/ch/2/sect/3/), we will denote the empty list as `&#39;()`
+        and dispense with the variable `nil` entirely.>>
+
+    %data.ssub{:title "List Operations"}
+      %md
+        The use of pairs to represent sequences of elements as lists is
+        accompanied by conventional programming techniques for manipulating
+        lists by successively "cdring down" the lists. For example, the
+        procedure `list-ref` in Scheme and `nth` in Clojure takes as arguments
+        a list and a number \\(n\\) and returns the \\(n\\)th item of the list.
+        It is customary to number the elements of the list beginning with 0.
+        The method for computing `nth` is the following:
+
+        - For \\(n=0\\), `nth` should return the `first` of the list.
+
+        - Otherwise, `nth` should return the \\(n-1\\)st item of the `rest` of the list.
+
+        ```clj
+        (defn nth [items n]
+          (loop [things items
+                 number n]
+            (if (= number 0)
+                (first things)
+                (recur (rest things) (dec number)))))
+        (def squares (list 1 4 9 16 25))
+
+        (nth squares 3)
+        16
+        ```
+
+        Often we `cdr` down the whole list. To aid in this, Scheme includes a
+        primitive `null?`, which tests whether its argument is the empty list.
+        Being as how Clojure is intended to be more general than that, the
+        analog in Clojure, called `empty?` accepts any collection as an
+        argument, and returns true if that collection is empty and false
+        otherwise. The Scheme procedure `length`, which returns the number of
+        items in a list (called `count` in Clojure), illustrates this typical
+        pattern of use:
+
+        ```clj
+        (defn count [items]
+          (if (empty? items)
+              0
+              (inc (length (rest items)))))
+        (def odds (list 1 3 5 7))
+
+        (count odds)
+        4
+        ```
+
+        The `count` procedure implements a simple recursive plan. The reduction step is:
+
+        - The `count` of any list is 1 plus the count of the `rest` of the list.
+
+        This is applied successively until we reach the base case:
+
+        - The `count` of the empty list is 0.
+
+        We could also compute `count` in an iterative style:
+
+        ```clj
+        (defn count [items]
+          (loop [things items
+                 accu   0]
+            (if (empty? things)
+                accu
+                (recur (rest things) (inc accu)))))
+        ```
+
+        Another conventional programming technique is to "cons up" an answer
+        list while cdring down a list, as in the procedure `append` (`concat`
+        in Clojure), which takes two lists as arguments and combines their
+        elements to make a new list:
+
+        ```clj
+        (concat squares odds)
+        (1 4 9 16 25 1 3 5 7)
+
+        (concat odds squares)
+        (1 3 5 7 1 4 9 16 25)
+        ```
+
+        `concat` is also implemented using a recursive plan. To `concat` lists
+        `list1` and `list2`, do the following:
+
+        - If `list1` is the empty list, then the result is just `list2`.
+
+        - Otherwise, `concat` the `rest` of `list1` and `list2`, and `conj` the
+        `first` of `list1` onto the result:
+
+        ```clj
+        (defn concat [list1 list2]
+          (if (empty? list1)
+              list2
+              (conj (concat (rest list1) list2) (first list1))))
+        ```
+
+    %data.exercises
+      %data.exercise
+        %md
+          Define a procedure `last-pair` that returns the list that contains
+          only the last element of a given (nonempty) list:
+
+          ```clj
+          (last-pair (list 23 72 149 34))
+          34
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn last-pair [items]
+              (loop [things items]
+                (if (empty? (rest things))
+                    things
+                    (recur (rest things)))))
+            ```
+
+      %data.exercise
+        %md
+          Define a procedure `reverse` that takes a list as arguments and
+          returns a list of the same elements in reverse order:
+
+          ```clj
+          (reverse (list 1 4 9 16 25))
+          (25 16 9 4 1)
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn reverse [items]
+              (loop [things items
+                     accu   nil]
+                (if (empty? things)
+                    accu
+                    (recur (rest things) (conj accu (first things))))))
+            ```
+
+            Clojure already has a procedure `reverse` that does exactly that.
+            Clojure has many powerful tools for manipulating sequences. You can
+            check them out at [Clojure.org](http://clojure.org/sequences).
+
+      %data.exercise
+        %md
+          Consider the change-counting program of [section
+          1.2.2](#!/sicp/ch/1/sect/2/sub/2/). It would be nice to be able to
+          easily change the currency used by the program, so that we could
+          compute the number of ways to change a british pound, for example. As
+          the program is written, the knowledge of the currency is distributed
+          partly into the procedure `first-denomination` and partly into the
+          procedure `count-change` (which knows that there are five kids of
+          U.S. coins). It would be nicer to be able to supply a list of coins
+          to be used for making change.
+
+          We want to rewrite the procedure `cc` so that its second argument is
+          a list of the values of the coins to use rather than an integer
+          specifying which coins to use. We could then have lists that defined
+          each kind of currency:
+
+          ```clj
+          (def us-coins (list 50 25 10 5 1))
+          (def uk-coins (list 100 50 20 10 5 2 1 0.5))
+          ```
+
+          We could then call `cc` as follows:
+
+          ```clj
+          (cc 100 us-coins)
+          292
+          ```
+
+          To do this will require changing the program `cc` somewhat. It will
+          still have the same form, but it will access its second argument
+          differently, as follows:
+
+          ```clj
+          (defn cc [amount coin-values]
+            (cond (= amount 0) 1
+                  (or (> 0 amount) (no-more? coin-values)) 0
+                  :else (+ (cc amount
+                               (except-first-denomination coin-values))
+                           (cc (- amount 
+                                  (first-denomination coin-values))
+                               coin-values))))
+          ```
+
+          Define the procedures `first-denomination`,
+          `except-first-denomination`, and `no-more?` in terms of primitive
+          operations on list structures. Does the order of the list
+          `coin-values` affect the answer produced by `cc`? Why or why not?
+
+        %data.q-a
+          %md
+            ```clj
+            (defn first-denomination [coins]
+              (first coins))
+            (defn except-first-denomination [coins]
+              (rest coins))
+            (defn no-more? [coins]
+              (empty? coins))
+            ```
+
+            Or, we could have done it this way,
+
+            ```clj
+            (def first-denomination first)
+            (def except-first-denomination rest)
+            (def no-more empty?)
+            ```
+
+            which requires fewer steps to evaluate.
+
+            As far as the order, the procedure would return the same answer,
+            but it would require a lot more steps and more memory (which might
+            cause a stack overflow if the `amount` is high enough. If you don't
+            understand what I'm saying, draw a diagram of what would happen if
+            the order of the coins were reversed (pennies up to half-dollars in
+            USD).
+
+      %data.exercise
+        %md
+          The procedures `+`, `*`, and `list` take arbitrary numbers of
+          arguments. One way to define such procedures is to use `defn` with
+          *dotted-tail notation*. In a procedure definition in Scheme, a
+          parameter list that has a dot before the last parameter name
+          indicates that, when the procedure is called, the initial parameters
+          (if any) will have as values the initial arguments, as usual, but the
+          final parameter's value will be a list of any remaining arguments.
+          Clojure has a similar construct, but instead of a dot, we use an
+          ampersand. For instance, given the definition
+
+          ```clj
+          (defn f [x y & z] <body>)
+          ```
+          
+          the procedure `f` can be called with two or more arguments. If we evaluate
+
+          ```clj
+          (f 1 2 3 4 5 6)
+          ```
+
+          then in the body of `f`, `x` will be 1, `y` will be 2, and `z` will
+          be the list `(3 4 5 6)`. Given the definition
+
+          ```clj
+          (defn g [& w] <body>)
+          ```
+
+          the procedure `g` can be called with zero or more arguments. If we evaluate
+
+          ```clj
+          (g 1 2 3 4 5 6)
+          ```
+
+          then in the body of `g`, `w` will be the list `(1 2 3 4 5 6)`.
+
+          Use this notation to write a procedure `same-parity` that takes one
+          or more integers and returns a list of all the arguments that have
+          the same even-odd parity as the first argument. For example,
+
+          ```clj
+          (same-parity 1 2 3 4 5 6 7)
+          (1 3 5 7)
+
+          (same-parity 2 3 4 5 6 7)
+          (2 4 6)
+
+        %data.q-a
+          %md
+            ```clj
+            (defn same-parity* [x items]
+              (let [parity (mod x 2)]
+                (loop [things items
+                       accu   (list x)]
+                  (cond (empty? things)
+                        accu
+                        (= (mod (first things) 2) parity)
+                        (recur (rest things)
+                               (conj accu (first things)))
+                        :else (recur (rest things) accu)))))
+            (defn same-parity [x & y]
+              (reverse (same-parity* (x y))))
+            ```
+
+    %data.ssub{:title "Mapping Over Lists"}
+      %md
+        One extremely useful operation is to apply some transformation to
+        each element in a list and generate the list of results. For
+        instance, the following procedure scales each number in a list by a
+        given factor:
+
+        ```clj
+        (defn scale-list [items factor]
+          (if (empty? items)
+              nil
+              (conj (* (first items) factor)
+                (scale-list (rest items) factor))))
+
+        (scale-list (list 1 2 3 4 5) 10)
+        (10 20 30 40 50)
+        ```
+
+        In an effort to get used to writing in ways that won't cause stack
+        overflow errors, let's turn this recursive procedure into an
+        iterative one using `loop`.
+
+      %data.q-a
+        %md
+          ```clj
+          (defn scale-list* [items factor]
+            (loop [things items
+                   accu   (list )]
+              (if (empty? things)
+                  accu
+                  (recur (rest things)
+                         (conj accu
+                               (* factor 
+                                  (first things)))))))
+          (defn scale-list [items factor]
+            (reverse (scale-list* items factor)))
+          ```
+
+      %md
+        We can abstract this general idea and capture it as a common patter
+        expressed as a higher-order procedure, just as in [section
+        1.3](#!/sicp/ch/1/sect/3/). The higher-order procedure here is called
+        `map`. `map` takes as arguments a procedure of one argument and a
+        sequential object (in our case a list), and in our case, returns a
+        list of the results produced by applying the procedure to each
+        element of the list<<Scheme standardly provides a map procedure that
+        is more general than the one described here. This more general map
+        takes a procedure of n arguments, together with n lists, and applies
+        the procedure to all the first elements of the lists, all the second
+        elements of the lists, and so on, returning a list of the results.
+        For example, `(map + (list 1 2 3) (list 40 50 60) (list 700 800
+        900))` returns `(741 852 963)`, and so on.>>
+
+        ```clj
+        (defn map [proc items]
+          (if (empty? items)
+              nil
+              (conj (proc (first items))
+                    (map proc (rest items)))))
+        (defn abs [x] (Math/abs x))
+        (map abs (list -10 2.5 -11.6 17))
+        (10 2.5 11.6 17)
+        (map (fn [x] (* x x))
+             (list 1 2 3 4))
+        (1 4 9 16)
+        ```
+
+        Let's try to make this one iterative as well!
+
+      %data.q-a
+        %md
+          ```clj
+          (defn map* [proc items]
+            (loop [things items
+                   accu   (list )]
+              (if (empty? things)
+                  accu
+                  (recur (conj accu
+                               (proc (first things)))))))
+          (defn map [proc items]
+            (reverse (map* proc items)))
+          ```
+
+      %md
+        Now we can give a new definition of `scale-list` in terms of `map`:
+
+        ```clj
+        (defn scale-list [items factor]
+          (map (fn [x] (* x factor))
+               items))
+        ```
+
+        `map` is an important construct, not only because it captures a
+        common pattern, but because it establishes a higher level of
+        abstraction in dealing with lists. In the original definition of
+        `scale-list`, the recursive structure of the program draws attention
+        to the element-by-element processing of the list. Defining
+        `scale-list` in terms of `map` surpresses that level of detail and
+        emphasizes that scaling transforms a list of elements to a list of
+        results. The difference between the two definitions is not that the
+        computer is performing a differnt process (it isn't) but that we
+        think about the process differently. In effect, `map` helps establish
+        an abstraction barrier that isolates the implementation of procedures
+        that transform lists from the details of how the elements of the list
+        are extracted and combined. Like the barriers shown in [figure
+        2.1](#!/sicp/ch/2/fig/1/), this abstraction gives us the flexibility
+        to change the low-level details of how sequences are implemented,
+        while preserving the conceptual framework of operations that
+        transform sequences to sequences. [Section
+        2.2.3](#!/sicp/ch/2/sect/2/sub/3/) expands on this use of sequences
+        as a framework for organizing programs.
+
+    %data.exercises
+      %data.exercise
+        %md
+          The procedure `square-list` takes a list of numbers as arguments and
+          returns a list of the squares of those numbers.
+
+          ```clj
+          (square-list (list 1 2 3 4))
+          (1 4 9 16)
+          ```
+
+          Here are two different definitions of `square-list`. Complete both of
+          them by filling in the missing expressions:
+
+          ```clj
+          (defn square-list* [items]
+            (loop [things items
+                   accu   (list )] 
+              (if (empty? items)
+                  accu
+                  (recur <??> <??>))))
+          (defn square-list [items]
+            (reverse (square-list* items)))
+          ```
+
+          And,
+
+          ```clj
+          (defn square-list [items]
+            (map <??> <??>))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn square-list [items]
+              (loop [things items
+                     accu   (list )]
+                (if (empty? things)
+                    nil
+                    (recur (rest things)
+                           (conj accu (square (first things)))))))
+
+            (defn square-list [items]
+              (map square items))
+            ```
+
+      %data.exercise
+        %md
+          Louis Reasoner tries to rewrite the first `square-list` procedure of
+          [exercise 2.21](#!/sicp/ch/2/ex/21/) so that it evolves an iterative
+          process:
+
+          ```clj
+          (defn square-list [items]
+            (loop [things items
+                   accu   (list )]
+              (if (empty? things)
+                  accu
+                  (recur (rest things)
+                         (conj accu 
+                               (square (first things)))))))
+          ```
+
+          Unfortunately, defining `square-list` this way produces the answer list in the reverse order of the one desired. Why?
+
+        %data.q-a
+          %md
+            As you probably noticed, I used an auxiliary function (decorated
+            with an asterisk) to define the iterative part, then the actual
+            function just applies `reverse` to the auxiliary one. The reason
+            is, every time we `conj` onto a list, the things get put out in
+            front. So if we take things off the front of one list, then put
+            them on the front of the other, we're reversing the order.
+
+        %md
+          Louis then tries to fix his bug by using `cons` instead of `conj`,
+          and interchanging the arguments to `cons`:
+
+          ```clj
+          (defn square-list [items]
+            (loop [things items
+                   accu   (list )]
+              (if (empty? things)
+                  accu
+                  (recur (rest things)
+                         (cons accu
+                               (square (first things)))))))
+          ```
+
+          This doesn't work either. Explain.
+
+        %data.q-a
+          %md
+            This is not how lists are constructed. Let's see what happens with
+            an actual example. Let's see what this would return:
+
+            ```clj
+            (square-list (list 1 2 3))
+            (loop [things (list 1 2 3)
+                   accu  (list )]
+              (if (empty? (list 1 2 3))
+                  accu
+                  (recur (rest (list 1 2 3))
+                         (cons accu 
+                               (square (first (list 1 2 3)))))))
+            (empty? list 1 2 3) ;false, so...
+            (recur (rest (list 1 2 3))
+                   (cons (list )
+                         (square (first (list 1 2 3)))))
+            (recur (list 2 3)
+                   (cons (list )
+                         (square 1)))
+            (recur (list 2 3)
+                   (cons (list )
+                         1))
+            ;Error: Don't know how to create ISeq from Java Long.
+            ```
+
+            That happened because `cons` requires a sequential object as its
+            second argument. Since numbers are not sequential objects, we get
+            that error.
+
+      %data.exercise
+        %md
+          The Scheme procedure `for-each` is similar to `map`. It takes as
+          arguments a procedure and a list of elements. However, rather than
+          forming a list of the results, `for-each` just applies the procedure
+          to each of the elements in turn, from left to right. The values
+          returned by applying the procedure to the elements are not used at
+          all --`for-each` is used with procedures that perform an action, such
+          as printing. For example,
+
+          ```scm
+          (for-each (lambda (x) (newline) (display x)) 
+                    (list 57 321 88))
+          57
+          321
+          88
+          ```
+
+          We have something similar in Clojure, called `doseq`. The function
+          differs mainly in the syntax for calling it. In the traditional
+          Clojurian sytnax, it starts out with bindings, then you just say what
+          you want it to do. For example,
+
+          ```clj
+          (doseq [x (list 57 321 88)]
+            (println x))
+          57
+          321
+          88
+          ```
+
+          You might notice, if you are following along with an open repl trying
+          these things for yourself, that `nil` was printed below the 88. That
+          is because, like everything else in Clojure, `doseq` returns a value,
+          which happens to be `nil`. `doseq` always returns `nil` (just
+          something to keep in mind).
+
+          Let's pretend, however, that we prefer the Scheme version of things.
+          Give an implementation of `for-each` (without using `doseq`).
+
+        %data.q-a
+          %md
+            ```clj
+            (defn for-each [proc items]
+              (loop [things items]
+                (if (empty? things)
+                    nil
+                    (do (proc (fist things))
+                        (recur (rest things))))))
+            ```
+
+    %data.subsect{:title "Hierarchical Structures"}
+      %md
+        The representation of sequences in terms of lists generalizes naturally
+        to represent sequences whose elements may themselves be sequences. For
+        example, we can regard the object `((1 2) 3 4)` constructed by
+
+        ```clj
+        (conj (list 3 4) (list 1 2))
+        ```
+
+        as a list of three items, the first of which is itself a list `(1 2)`.
+        Indeed, this is suggested by the form in which the result is printed by
+        the interpreter. [Figure 2.5](#!/sicp/ch/2/fig/5/) shows the
+        representation of this structure in terms of pairs.
+
+      %data.fig{:footer "Structure formed by (conj (list 3 4) (list 1 2))"}
+      
+      %md
+        Another way to think of sequences whose elements are sequences is as
+        *trees*. The elements of the sequence are the branches of the tree, and
+        elements that are themselves sequences are subtrees. [Figure
+        2.6](#!/sicp/ch/2/fig/6/) shows the structure in [Figure
+        2.5](#!/sicp/ch/2/fig/5/) viewed as a tree.
+
+      %data.fig{:footer "The list structure in figure 2.5 viewed as a tree."}
+
+      %md
+        Recursion is a natural tool for dealing with tree structures, since we
+        can often reduce operations on trees to operations on their branches,
+        which reduce in tern to operations on the branches of the branches, and
+        so on, until we reach the leaves of the tree. As an example, compare
+        the `length` procedure of [section 2.2.1](#!/sicp/ch/2/sect/2/sub/1/)
+        with the `count-leaves` procedure, which returns the total number of
+        leaves of a tree:
+
+        ```clj
+        (def x (conj (list 3 4) (list 1 2)))
+        ((1 2) 3 4)
+
+        (length x)
+        3
+
+        (count-leaves x)
+        4
+
+        (list x x)
+        (((1 2) 3 4) ((1 2) 3 4))
+
+        (length (list x x))
+        2
+
+        (count-leaves (list x x))
+        8
+        ```
+
+        To implement `count-leaves`, recall the recursive plan for computing
+        `length`:
+
+        - `length` of a list `x` is 1 plus the `length` of the `rest` of `x`.
+
+        - `length` of the empty list is 0.
+
+        `count-leaves` is similar. The value for the empty list is the same:
+
+        - `count-leaves` of the empty list is 0.
+
+        But in the reduction step, where we strip off the `first` of the list,
+        we must take into account that the `first` may itself be a tree whose
+        leaves we need to count. Thus, the appropriate reduction step is
+
+        - `count-leaves` of a tree `x` is `count-leaves` of the `first` of `x`
+        plus `count-leaves` of the `rest` of `x`.
+
+        Finally, by taking `first`s we reach actual leaves, so we need another
+        base case:
+
+        - `count-leaves` of a leaf is 1.
+
+        To aid in writing recursive procedures on trees, Scheme provides a
+        primitive predicate `pair?`, which tests whether its argument is a
+        pair. Since pairs aren't really a thing in Clojure, but rather we deal
+        in lists directly, what, would you suppose, is the primitive to tell
+        whether something is a list? The procedure `list?`, of course.
+        Alternatively, for our program, we could use the more general `seq?`,
+        which returns `true` when its argument is any sequential object, and
+        false otherwise. But we'll use `list` because, we don't really know the
+        implications of including vectors and things into this function yet.
+        Here is the complete procedure:
+
+        ```clj
+        (defn count-leaves [x]
+          (cond (and (list? x)
+                     (empty? x)) 0
+                (not (list? x)) 1
+                :else (+ (count-leaves (first x))
+                         (count-leaves (rest x)))))
+        ```
+
+    %data.exercises
+      %data.exercise
+        %md
+          Suppose we evaluate the expression `(list 1 (list 2 (list 3 4)))`.
+          Give the result printed by the interpreter, the corresponding
+          box-and-pointer structure, and the interpretation of this as a tree
+          (as in [figure 2.6](#!/sicp/ch/2/fig/6/)).
+
+        %data.q-a
+          %md
+            ```clj
+            (list 1 (list 2 (list 3 4)))
+            (1 (2 (3 4)))
+            ```
+
+            But if you didn't see that one already, I think you're missing the
+            point of this site here.
+
+            As for the diagram, I will put that in later... If anyone even
+            reads this far... On that note: If you have read this far, please,
+            shoot me an email at
+            [amniskin@gmail.com](mailto:amniskin@gmail.com). I'd love to hear
+            any suggestions or just any feedback at all, really.
+
+      %data.exercise
+        %md
+          Give combinations of `first` and `rest` that will pick 7 from each of
+          the following lists:
+
+          ```clj
+          (1 3 (5 7) 9)
+
+          ((7))
+
+          (1 (2 (3 (4 (5 (6 7))))))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (rest (list 1 3 (5 7) 9))
+            (3 (5 7) 9)
+
+            (rest (rest (list 1 3 (5 7) 9)))
+            ((5 7) 9)
+
+            (first (rest (rest (list 1 3 (5 7) 9))))
+            (5 7)
+
+            (rest (first (rest (rest (list 1 3 (5 7) 9)))))
+            (7)
+            ```
+
+            So we want, `first`, `rest`, `first`, `rest`, `rest` (in written
+            order, not the order of application).
+
+            The second, we want `first`, `first`.
+
+            The third:
+
+            ```clj
+            (rest (list 1 (2 (3 (4 (5 (6 7)))))))
+            ((2 (3 (4 (5 (6 7))))))
+            ```
+
+            So, we can see that we're going to have to do alternating `first`s
+            and `rest`s till we get to the answer (if you don't believe me,
+            write it out a bit, and be sure to check that this hypothesis works
+            at the end as well!).
+
+            So our answer is, `first`, `rest`, repeated 6 times (again, in
+            written order, or equivalently, reverse application order).
+
+      %data.exercise
+        %md
+          Suppose we define `x` and `y` to be two lists:
+
+          ```clj
+          (def x (list 1 2 3))
+          (def y (list 4 5 6))
+          ```
+
+          What result is printed by the interpreter in response to evaluating
+          each of the following expressions:
+
+          ```clj
+          (concat x y)
+
+          (conj x y)
+
+          (list x y)
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (concat x y)
+            (1 2 3 4 5 6)
+
+            (conj x y)
+            ((4 5 6) 1 2 3)
+
+            (list x y)
+            ((1 2 3) (4 5 6))
+            ```
+
+      %data.exercise
+        %md
+          Modify your `reverse` procedure of [exercise
+          2.18](#!/sicp/ch/2/ex/18/) to produce a `deep-reverse` procedure that
+          takes a list as argument and returns as its value the list with its
+          elements reversed and with all sublists deep-reversed as well. For
+          example,
+
+          ```clj
+          (def x (list (list 1 2) (list 3 4)))
+
+          x
+          ((1 2) (3 4))
+
+          (reverse x)
+          ((3 4) (1 2))
+
+          (deep-reverse x)
+          ((4 3) (2 1))
+
+        %data.q-a
+          %md
+            ```clj
+            (defn deep-reverse [items]
+              (loop [things items
+                     accu   (list )]
+                (cond (and (list? things)
+                           (empty? things)) accu
+                      (not (list? things)) things
+                      :else (recur (rest things)
+                                   (conj accu
+                                         (deep-reverse (first things)))))))
+            ```
+      %data.exercise
+        %md
+          Write a procedure `fringe` that takes as argument a tree (represented
+          as a list) and returns a list whose elements are all the leaves of
+          the tree arranged in left-to-right order. For example,
+
+          ```clj
+          (def x (list (list 1 2) (list 3 4)))
+
+          (fringe x)
+          (1 2 3 4)
+
+          (fringe (list x x))
+          (1 2 3 4 1 2 3 4)
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn fringe* [items]
+              (loop [things items
+                     accu   (list )]
+                (cond (not (list? things))
+                      (throw (Exception. "Oops. That's not a list."))
+                      (empty? things)
+                      accu
+                      (list? (first things))
+                      (recur (concat (first things)
+                                     (rest things))
+                             accu)
+                      :else
+                      (recur (rest things)
+                             (conj accu
+                                   (first things))))))
+            (defn fringe [items]
+              (reverse (fringe* items)))
+            ```
+
+            If you execute this, it should return an error. The reason being
+            that `concat` doesn't return a `list`, but rather a lazy sequence.
+            To account for this, we could write:
+
+            ```clj
+            (defn fringe* [items]
+              (loop [things items
+                     accu   (list )]
+                (cond (not (seq? things))
+                      (throw (Exception. "Oops. That's not a sequential object!."))
+                      (empty? things)
+                      accu
+                      (seq? (first things))
+                      (recur (concat (first things)
+                                     (rest things))
+                             accu)
+                      :else
+                      (recur (rest things)
+                             (conj accu
+                                   (first things))))))
+            (defn fringe [items]
+              (reverse (fringe* items)))
+            ```
+
+      %data.exercise
+        %md
+          A binary mobile consists of two branches, a left branch and a right branch. Each branch is a rod of a certain length, from which hangs either a weight or another binary mobile. We can represent a binary mobile using compund data by constructing it from two branches (for example, using `list`):
+
+          ```clj
+          (defn make-mobile [left right]
+            (list left right))
+          ```
+
+          A branch is constructed from a `length` (which must be a number)
+          together with a `structure`, which may be either a number
+          (representing a simple weight) or another mobile:
+          
+          ```clj
+          (defn make-branch [length structure]
+            (list length structure))
+          ```
+
+          a. Write the corresponding selectors `left-branch` and
+          `right-branch`, which return the branches of a mobile, and
+          `branch-length` and `branch-structure`, which return the components
+          of a branch.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn left-branch [mobile]
+              (first mobile))
+            (defn right-branch [mobile]
+              (second mobile))
+            (defn branch-length [branch]
+              (first branch))
+            (defn branch-structure [branch]
+              (second branch))
+            ```
+
+        %md
+          b. Using your selectors, define a procedure `total-weight` that
+          returns the total weight of a mobile.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn total-weight [mobile]
+              (if (seq? mobile)
+                  (+ (total-weight (left-branch mobile))
+                     (total-weight (right-branch mobile)))
+                  mobile))
+            ```
+
+        %md
+          c. A mobile is said to be *balanced* if the torque applied by its
+          top-left branch is equal to that applied by its top-right branch
+          (that is, if the length of the left rod multiplied by the weight
+          hanging from that rod is equal to the corresponding product for the
+          right side) and if each of the submobiles hanging off its branches is
+          balanced. Design a predicate that tests whether a binary mobile is
+          balanced.
+
+        %data.q-a
+          %md
+            ```clj
+            (def branch-torque [branch]
+              (* (length branch)
+                 (total-weight (structure branch))))
+            (defn top-level-balanced? [mobile]
+              (= (branch-torque (left-branch mobile))
+                 (branch-torque (right-branch mobile))))
+            (defn balanced? [mobile]
+              (if (not (seq? mobile))
+                  true
+                  (and (top-level-balanced? mobile)
+                       (balanced? (structure (left-branch mobile)))
+                       (balanced? (structure (right-branch mobile))))))
+            ```
+
+        %md
+          d. Now suppose we change the constructor
+
+          ```clj
+          (defn make-mobile [left right]
+            (conj right left))
+          ```
+
+          How much do you need to change to your programs to convert them to
+          the new representation?
+
+        %data.q-a
+          %md
+            ```clj
+            (defn left-branch [mobile]
+              (first mobile))
+            (defn right-branch [mobile]
+              (rest mobile))
+            ```
+
+            And we're good to go.
+
+    %data.ssub{:title "Mapping Over Trees"}
+      %md
+        Just as `map` is a powerful abstraction for dealing with sequences,
+        `map` together with recursion is a powerful abstraction for dealing
+        with trees. For instance, the `scale-tree` procedure, analogous to
+        `scale-list` of [section 2.2.1](#!/sicp/ch/2/sect/2/sub/1/), takes as
+        arguments a numeric factor and a tree whose leaves are numbers. It
+        returns a tree of the same shape, where each number is multiplied by
+        the factor. The recursive plan for `scale-tree` is similar to the one
+        for `count-leaves`:
+
+        ```clj
+        (defn scale-tree [tree factor]
+          (cond (not (seq? tree)) (* tree factor)
+                (empty? tree) nil
+                :else (conj (scale-tree (rest tree) factor)
+                            (scale-tree (first tree) factor))))
+        
+        (scale-tree (list 1 (list 2 (list 3 4) 5) (list 6 7))
+                    10)
+        (10 (20 (30 40) 50) (60 70))
+        ```
+
+        Another way to implement `scale-tree` is to regard the tree as a
+        sequence of sub-trees and use `map`. We mape over the sequence, scaling
+        each sub-tree in turn, and return the list of results. In the base
+        case, where the tree is a leaf, we simply multiply by the factor:
+
+        ```clj
+        (defn scale-tree [tree factor]
+          (map (fn [sub-tree]
+                 (if (seq? sub-tree)
+                   (scale-tree sub-tree factor)
+                   (* sub-tree factor)))
+               tree))
+        ```
+
+        Many tree operations can be implemented by similar combinations of
+        sequence operations and recursion.
+
+    %data.exercises
+      %data.exercise
+        %md
+          Define a procedure `square-tree` analogous to the `square-list`
+          procedure of [exercise 2.21](#!/sicp/ch/2/ex/21/). That is,
+          `square-tree` should behave as follows:
+
+          ```clj
+          (square-tree
+            (list 1
+                  (list 2 (list 3 4) 5)
+                  (list 6 7)))
+          (1 (4 (9 16) 25) (36 49))
+          ```
+
+          Define `square-tree` both directly (i.e., without using any
+          higher-order procedures) and also by using `map` and recursion.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn square-tree [tree]
+              (map (fn [sub-tree]
+                     (if (seq? sub-tree)
+                         (square-tree sub-tree)
+                         (square sub-tree)))
+                   tree))
+            ```
+
+            Or,
+
+            ```clj
+            (defn square-tree [tree]
+              (cond (not (seq? tree)) (square tree)
+                    (empty? tree) nil
+                    :else
+                    (conj (square-tree (rest tree))
+                          (square-tree (first tree)))))
+            ```
+
+      %data.exercise
+        %md
+          Abstract your answer to [exercise 2.30](#!/sicp/ch/2/ex/30/) to
+          produce a procedure `tree-map` with the property that `square-tree`
+          could be defined as
+
+          ```clj
+          (defn square-tree [tree]
+            (tree-map square tree))
+          ```
+
+        %data.q-a
+          ```clj
+          (defn tree-map [proc tree]
+            (map #(if (seq? %)
+                      (tree-map proc %)
+                      (proc %))
+                 tree))
+          ```
+
+          Or, if you prefer the non-abstraction-beholding version (which I
+          don't see why you would):
+
+          ```clj
+          (defn tree-map [proc tree]
+            (cond (not (seq? tree)) (proc tree)
+                  (empty? tree) nil
+                  :else
+                  (conj (tree-map proc (rest tree))
+                        (tree-map proc (first tree)))))
+          ```
+
+      %data.exercise
+        %md
+          We can represent a set as a list of distinct elements, and we can
+          represent the set of all subsets of the set as a list of lists. For
+          example, if the set is `(1 2 3)`, then the set of all subsets is,
+          `(() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3))`. Complete the following
+          definition of a procedure that generates the set of subsets of a set
+          and give a clear explanation of why it works:
+
+          ```clj
+          (defn subsets [s]
+            (if (empty? s)
+                (list (list ))
+                (let [left (subsets (rest s))]
+                  (concat left (map <??> left)))))
+          ```
+
+        %data.q-a
+          ```clj
+          (defn subsets [s]
+            (if (empty? s)
+                (list (list ))
+                (let [left (subsets (rest s))]
+                  (concat left 
+                          (map #(conj % 
+                                      (first s))
+                               left)))))
+          ```
+
+          So, the procedure in question is, `#(conj % (first s))`. As for why
+          this works, let's build it up inductively -- by that I mean that we
+          should look at this step by step. Let's assume we've already computed
+          `(subsets (rest s))`, and see what we have to do to get `(subsets
+          s)`.
+
+          Firstly, if the list is `(list )` (in which case we can't use our
+          assumption), then our procedure returns `(())`, which we know to be
+          correct.
+
+          Next, let's assume that our list `s` is not empty, and that we've
+          computed `(subsets (rest s))`. If we take any subset `d` of `s` and
+          disregard `(first s)` if it's an element of `d`, then this (possibly)
+          new version of `d` is in `(subsets (rest s))`. Hence, we can generate
+          any element of `(subsets s)` by either taking it directly from
+          `(subsets (rest s))`, or by "conjing" `(first s)` onto something from
+          `(subsets (rest s))`. Therefore, `(subsets s)`= `(subsets (rest s))`
+          \\(\cup\\) `(map #(conj % (first s)) (subsets (rest s)))`.
+
+          If this is at all unclear, please let me know. It's kinda hard to
+          explain things without any feedback.
+    
+    %data.subsect{:title "Sequences as Conventional Interfaces"}
+      %md
+        In working with compound data, we've stressed how data abstraction
+        permits us to design programs without becoming enmeshed in the details
+        of data representations, and how abstraction preserves for us the
+        flexibility to experiment with alternative representations. In this
+        section, we introduce another powerful design principle for working
+        with data structures -- the use of *conventional interfaces*.
+
+        In [section 1.3](#!/sicp/ch/1/sect/3/) we saw how program abstractions,
+        implemented as higher-order procedures, can capture common patterns in
+        programs that deal with numerical data. Our ability to formulate
+        analogous operations for working with compound data depends crucially
+        on the style in which we manipulate our data structures. Consider, for
+        example, the following procedure, analogous to the `count-leaves`
+        procedure of [section 2.2.2](#!/sicp/ch/2/sect/2/sub/2/), which takes a
+        tree as argument and computes the sum of the squares of the leaves that
+        are odd:
+
+        ```clj
+        (defn sum-odd-squares [tree]
+          (cond (empty? tree) 0
+                (not (seq? tree)) (if (odd? tree)
+                                      (square tree)
+                                      0)
+                :else (+ (sum-odd-squares (first tree))
+                         (sum-odd-squares (rest tree)))))
+        ```
+
+        On the surface, this procedure is very different from the following
+        one, which constructs a list of all the even Fibonacci numbers
+        \\(Fib(k)\\), where \\(k\\) is less than or equal to a given integer
+        \\(n\\):
+
+        ```clj
+        (defn even-fibs [n]
+          (let [next (fn [k] (if (> k n)
+                                 (list )
+                                 (let [f (fib k)]
+                                   (if (even? f)
+                                       (conj (next (+ k 1)) f)
+                                       (next (+ k 1)))))))
+          (next 0))
+        ```
+
+        Despite the fact that these two procedures are structurally very
+        different, a more abstract description of the two computations reveals
+        a great deal of similarity. The first program
+
+        - enumerates the leaves of a tree;
+        - filters them, selecting the odd ones;
+        - squares each of the selected one; and
+        - accumulates the results unsing +, starting with 0.
+
+        The second program
+
+        - enumerates the integers from 0 to \\(n\\);
+        - computes the fibonacci number for each integer;
+        - filters them, selecting the even ones; and
+        - accumulates the results using `conj`, starting with the empty list.
+
+        A signal-processing engineer would find it natural to conceptualize
+        these processes in terms of signals flowing through a cascade of
+        stages, each of which implements part of the program plan, as shown in
+        [figure 2.7](#!/sicp/ch/2/fig/7/). In `sum-odd-squares`, we begin with
+        an *enumerator*, which generates a "signal" consisting of the leaves of
+        a given tree. This signal is passed through a *filter*, which
+        eliminates all but the odd elements. The resulting signal is in turn
+        passed through a *map*, which is a "transducer" that applies the
+        `square` procedure to each element. The output of the map is then fed
+        to an *accumulator*, which combines the elements using +, starting from
+        an initial 0. The plan for `even-fibs` is analogous.
+
+      %data.fig{:footer "The signal-flow plans for the procedures sum-odd-squares (top) and even-fibs (bottom) reveal the commonality between the two programs."}
+
+      %md
+        Unfortunately, the two procedure definitions above fail to exibit this
+        signal-flow structure. For instance, if we examine the
+        `sum-odd-squares` procedure, we find that the enumeration is
+        implemented partly by the `empty?` and `seq?` tests and partly by the
+        tree-recursive structure of the procedure. Similarly, the accumulation
+        is found partly in the tests and partly in the addition used in the
+        recursion. In general, there are no distinct parts of either procedure
+        that correspond to the elements in the signal-flow description. Our two
+        procedures decompose the computations in a different way, spreading the
+        enumeration of the program and mingling it with the map, the filter,
+        and the accumulation. If we could reorganize our programs to make the
+        signal-flow structure manifest in the procedures we write, this would
+        increase the conceptual clarity of the resulting code.
+
+    %data.ssub{:title "Sequence Operations"}
+      %md
+        The key to organizing programs so as to more clearly reflect the
+        signal-flow structure is to concentrate on the "signals" that flow from
+        one stage in the process to the next. If we represent these signals as
+        lists, then we can use list operations to implement the processing at
+        each of the stages. For instance, we can implement the mapping stages
+        of the signal-flow diagrams using the `map` procedure from [section
+        2.2.1](@!/sicp/ch/2/sect/2/sub/1/):
+
+        ```clj
+        (map square (list 1 2 3 4 5))
+        (1 4 9 16 25)
+        ```
+
+        Filtering a sequence to select only those elements that satisfy a given
+        predicate is accomplished by
+
+        ```clj
+        (defn filter [predicate sequence]
+          (cond (empty? sequence) (list )
+                (predicate (first sequence)) (conj (filter predicate 
+                                                           (rest sequence))
+                                                   (first sequence))
+                :else (filter predicate (rest sequence))))
+        ```
+
+        For example,
+
+        ```clj
+        (filter odd? (list 1 2 3 4 5))
+        (1 3 5)
+        ```
+
+        Accumulations can be implemented by
+        
+        ```clj
+        (defn accumulate [op initial sequence]
+          (if (empty? sequence)
+              initial
+              (op (first sequence)
+                  (accumulate op initial (rest sequence)))))
+        
+        (accumulate + 0 (list 1 2 3 4 5))
+        15
+
+        (accumulate * 1 (list 1 2 3 4 5))
+        120
+
+        (accumulate cons nil (list 1 2 3 4 5))
+        (1 2 3 4 5)
+        ```
+
+        Note: in the original SICP, `accumulate` is defined as:
+        
+        ```scm
+        (define (accumulate op initial sequence)
+          (if (null? sequence)
+              initial
+              (op (car sequence)
+                  (accumulate op initial (cdr sequence)))))
+        ```
+        
+        If we wanted to define this so as to be able to use `conj` instead of
+        `cons`, what would we have to change?
+
+        All that remains to implement signal-flow diagrams is to enumerate the
+        sequence of elements to be processed. For `even-fibs`, we need to
+        generate the sequence of integers in a given range, which we can do as
+        follows:
+
+        ```clj
+        (defn enumerate-interval [low high]
+          (if (> low high)
+              nil
+              (cons low (enumerate-interval (+ low 1) high))))
+        (enumerate-interval 2 7)
+        (2 3 4 5 6 7)
+        ```
+
+        Clojure has such a function, and it is called `range`. `range` is a
+        function that takes, 1, 2 or 3 arguments. For more information on
+        `range`, see
+        [clojure.org](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/range).
+        Try to define this using `conj` instead. Does it make a difference? Why
+        or why not?
+
+        To enumerate the leaves of a tree, we can use<<This is, in fact,
+        precisely the fringe procedure from exercise 2.28. Here we&#39;ve
+        renamed it to emphasize that it is part of a family of general
+        sequence-manipulation procedures.>>
+
+        ```clj
+        (defn enumerate-tree [tree]
+          (cond (empty? tree) nil
+                (not (seq? tree)) (list tree)
+                :else (concat (enumerate-tree (first tree))
+                              (enumerate-tree (rest tree)))))
+        (enumerate-tree (list 1 (list 2 (list 3 4)) 5))
+        (1 2 3 4 5)
+        ```
+
+        Now we can refomulate `sum-odd-squares` and `even-fibs` as in the
+        signal-flow diagrams. For `sum-odd-squares`, we enumerate teh sequence
+        of leaves of the tree, filter this to keep only the odd numbers in the
+        sequence, square each element, and sum the results:
+
+        ```clj
+        (defn summ-odd-squares [tree]
+          (accumulate +
+                      0
+                      (map square
+                           (filter odd?
+                                   (enumerate-tree tree)))))
+        ```
+
+        For `even-fibs`, we enumerate the integers from 0 to \\(n\\), generate
+        the Fibonacci number for each of these integers, filter the resulting
+        sequence to keep only the even elements, and accumulate the results
+        into a list:
+
+        ```clj
+        (defn even-fibs [n]
+          (accumulate cons
+                      nil
+                      (filter even?
+                              (map fib
+                                   (range n)))))
+        ```
+
+        The value of expressing programs as sequence operations is that this
+        helps us make program designs that are modular, that is, designs that
+        are constructed by combining relatively independent pieces. We can
+        encourage modular design by providing a library of standard components
+        together with a conventional interface for connecting the components in
+        flexible ways.
+
+        Modular construction is a powerful strategy for controlling complexity
+        in engineering design. In real signal-processing applications, for
+        example, designers regularly build systems by cascading elements
+        selected from standard program elements that we can mix and match. For
+        instance, we can reuse pieces from the `sum-odd-squares` and
+        `even-fibs` procedures in a program that constructs a list of the
+        squares of the first \\(n+1\\) Fibonacci numbers:
+
+        ```clj
+        (defn list-fib-squares [n]
+          (accumulate cons
+                      nil
+                      (map square
+                           (map fib
+                                (range n)))))
+        (list-fib-squares 10)
+        (0 1 1 4 9 25 64 169 441 1156 3025)
+        ```
+
+        We can rearrange the pieces and use them in computing the product of
+        the odd integers in a sequence:
+
+        ```clj
+        (defn product-of-squares-of-odd-elements [items]
+          (accumulate *
+                      1
+                      (map square
+                        (filter odd? items))))
+        (product-of-squares-of-odd-elements (list 1 2 3 4 5))
+        225
+        ```
+
+        These examples give just a hint of the vast range of operations that
+        can be expressed as sequence operations.<<Richard Waters (1979)
+        developed a program that automatically analyzes traditional Fortran
+        programs, viewing them in terms of maps, filters, and accumulations. He
+        found that fully 90 percent of the code in the Fortran Scientific
+        Subroutine Package fits neatly into this paradigm. One of the reasons
+        for the success of Lisp as a programming language is that lists provide
+        a standard medium for expressing ordered collections so that they can
+        be manipulated using higher-order operations. The programming language
+        APL owes much of its power and appeal to a similar choice. In APL all
+        data are represented as arrays, and there is a universal and convenient
+        set of generic operators for all sorts of array operations.>>
+
+        Sequences, implemented here as lists, serve as a conventional interface
+        that permits us to combine processing modules. Additionally, when we
+        uniformly represent structures as sequences, we have localized the
+        data-structure dependencies in our programs to a small number of
+        sequences, while leaving the overall design of our programs intact. We
+        will exploit this capability in [section 3.5](#!/sicp/ch/3/sect/5/),
+        when we generalize the sequence-processing paradigm to admit infinite
+        sequences.
+
+    %data.exercises
+      %data.exercise
+        %md
+          Fill in the missing expressions to complete the following definitions
+          of some basic list-manipulation operations as accumulations:
+
+          ```clj
+          (defn map [p items]
+            (accumulate (fn [x y] <??>) nil sequence))
+
+          (defn concat [items1 items2]
+            (accumulate conj <??> <??>))
+
+          (defn count [items]
+            (accumulate <??> 0 items))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn map [p items]
+              (accumulate (fn [x y] (p x)) nil sequence))
+
+            (defn concat [items1 items2]
+              (accumulate cons
+                          items2
+                          (reverse items1)))
+
+            (defn count [items]
+              (accumulate (fn [x y] (+ y 1) 0 items)))
+            ```
+
+      %data.exercise
+        %md
+          Evaluating a polynomial in \\(x\\) at a given value of \\(x\\) can be
+          formulated as an accumulation. We evaluate the polynomial
+
+          $$a_nx^n+a_{n-1}x^{n-1}+...+a_1x+a_0$$
+
+          using a well-known algorithm called *Horner's rule*, which structures
+          the computation as
+
+          $$(...(a_n x+a_{n-1}) x+...+a_1)x+a_0 $$
+
+          In other words, we start with \\(a_n\\), multiply by \\(x\\), add
+          \\(a_{n-1}\\), multiply by \\(x\\), and so on, until we reach
+          \\(a_0\\).<<According to Knuth (1981), this rule was formulated by W.
+          G. Horner early in the nineteenth century, but the method was
+          actually used by Newton over a hundred years earlier. Horner&#39;s
+          rule evaluates the polynomial using fewer additions and
+          multiplications than does the straightforward method of first
+          computing an \\(x_n\\), then adding \\(a_{n-1}x_{n-1}\\), and so on.
+          In fact, it is possible to prove that any algorithm for evaluating
+          arbitrary polynomials must use at least as many additions and
+          multiplications as does Horner's rule, and thus Horner's rule is an
+          optimal algorithm for polynomial evaluation. This was proved (for the
+          number of additions) by A. M. Ostrowski in a 1954 paper that
+          essentially founded the modern study of optimal algorithms. The
+          analogous statement for multiplications was proved by V. Y. Pan in
+          1966. The book by Borodin and Munro (1975) provides an overview of
+          these and other results about optimal algorithms.>> Fill in the
+          following template to produce a procedure that evaluates a polynomial
+          using Horner's rule. Assume that the coefficients of the polynomial
+          are arranged in a sequence, from \\(a_0\\) through \\(a_n\\).
+
+          ```clj
+          (defn horner-eval [x coefficient-sequence]
+            (accumulate (fn [this-coeff higher-terms] <??>)
+                        0
+                        coefficient-sequence))
+          ```
+
+          For example, to compute \\(1+3x+5x^3+s^5\\) at \\(x=2\\) you would evaluate
+
+          ```clj
+          (horner-eval 2 (list 1 3 0 5 0 1))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn horner-eval [x coefficient-sequence]
+              (accumulate (fn [this-coeff higher-terms]
+                              (+ this-coeff (* x higher-tems)))
+                          0
+                          coefficient-sequence))
+            ```
+
+            Can you write a procedure that will compute Horner's rule
+            iteratively?
+
+      %data.exercise
+        %md
+          Redefine `count-leaves` from [section
+          2.2.2](#!/sicp/ch/2/sect/2/sub/2/) as an accumulation:
+
+          ```clj
+          (defn count-leaves [t]
+            (accumulate <??> <??> (map <??> <??>)))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn count-leaves [t]
+              (accumulate +
+                          0
+                          (map (fn [x]
+                                 (if (seq? x)
+                                     (count-leaves x)
+                                     1))
+                               t)))
+            ```
+
+      %data.exercise
+        %md
+          The procedure `accumulate-n` is similar to `accumulate` except that
+          it takes as its third argument a sequence of sequences, which are all
+          assumed to have the same number of elements. It applies the
+          designated accumulation procedure to combine all the first elements
+          of the sequences, all the second elements of the sequences, and so
+          on, and returns a sequence of the results. For instance, if `s` is a
+          sequence containing four sequences, `((1 2 3) (4 5 6) (7 8 9) (10 11
+          12))`, then the value of `(accumulate-n + 0 s)` should be the
+          sequence `(22 26 30)`. Fill in the missing expressions in the
+          following definition of `accumulate-n`:
+
+          ```clj
+          (defn accumulate-n [op init items]
+            (if (empty? (first items))
+                nil
+                (cons (accumulate   op init <??>)
+                      (accumulate-n op init <??>))))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn accumulate-n [op init item]
+              (if (empty? (first items))
+                  nil
+                  (cons (accumulate   op init (map first items))
+                        (accumulate-n op init (map rest items)))))
+            ```
+
+      %data.exercise
+        %md
+          Suppose we represent vectors \\(v=(v_i)\\) as sequences of numbers,
+          and matrices \\(m=(m_{ij})\\) as sequences of vectors (the rows of
+          the matrix). For example, the matrix
+
+          $$\left[\begin{array}{cccc}
+          1 & 2 & 3 & 4 \\\\
+          4 & 5 & 6 & 6 \\\\
+          6 & 7 & 8 & 9
+          \end{array}\right]$$
+
+          is represented as the sequence `((1 2 3 4) (4 5 6 6) (6 7 8 9))`.
+          With this representation, we can use sequence operations to concisely
+          express the basic matrix and vector operations. These operations
+          (which are described in any book on matrix algebra) are the
+          following:
+
+          $$\begin{align*} 
+          (\text{dot-product }v \cdot w) & \text{ returns the sum } \sum_i v_iw_i \\\\
+          (\text{matrix times vector }m \cdot v) & \text{ returns the vector } t \text{, where }t_i=\sum_j m_{ij}v_j \\\\
+          (\text{matrix times matrix }m \times n) & \text{ returns the matrix }p\text{ where }p_{ij}=\sum_k m_{ik}n_{kj} \\\\
+          (\text{transpose }m) & \text{ returns the matrix }n \text{ where}n_{ij}=m_{ji} \\\\
+          \end{align*}$$
+
+          We can define the product as<<This definition uses the extended
+          version of map described in footnote 12. Luckily, our `map` function
+          can already take multiple list arguments. Play around with it and see
+          how it works.>>
+
+          ```clj
+          (defn dot-product [v w]
+            (accumulate + 0 (map * v w)))
+          ```
+
+          Fill in the missing expressions in the following procedures for
+          computing the other matrix operations. (The procedure `accumulate-n`
+          is defined in [exercise 2.36](#!/sicp/ch/2/ex/36/).)
+
+          ```clj
+          (defn matrix-*-vector [m v]
+            (map <??> m))
+
+          (defn transpose [m]
+            (accumulate-n <??> <??> m))
+
+          (defn matrix-*-matrix [m n]
+            (let [cols (transpose n)]
+              (map <??> m)))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn matrix-*-vector [m v]
+              (map #(dot-product v %) m))
+
+            (defn transpose [m]
+              (accumulate-n cons nil m))
+
+            (defn matrix-*-matrix [m n]
+              (let [cols (transpose n)]
+                (map #(matrix-*-vector cols %) m))
+            ```
+
+      %data.exercise
+        %md
+          The `accumulate` procedure is also known as `fold-right`, because it
+          combines the first element of the sequence with the result of
+          combining all the elements to the right. There is also a `fold-left`,
+          which is similar to `fold-right`, except that it combines elements
+          working in the opposite direction:
+
+          ```clj
+          (defn fold-left [op initial items]
+            (loop [result initial
+                   things items]
+              (if (empty? things)
+                  result
+                  (recur (op result (first things))
+                         (rest things)))))
+          ```
+
+          What are the values of
+
+          ```clj
+          (fold-right / 1 (list 1 2 3))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (fold-right / 1 (list 1 2 3))
+            (/ 1 (fold-right / 1 (list 2 3)))
+            (/ 1 (/ 2 (fold-right / 1 (list 3))))
+            (/ 1 (/ 2 (/ 3 1)))
+            (/ 1 (/ 2 3))
+            3/2
+            ```
+
+        %md
+          ```clj
+          (fold-left / 1 (list 1 2 3))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (fold-left / 1 (list 1 2 3))
+            (loop 1 (list 1 2 3))
+            (loop 1/1 (list 2 3))
+            (loop 1 (list 2 3))
+            (loop 1/2 (list 3))
+            (loop 1/6 (list ))
+            1/6
+            ```
+
+        %md
+          ```
+          (fold-right list nil (list 1 2 3))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (fold-right list nil (list 1 2 3))
+            (list 1 (fold-right list nil (list 2 3)))
+            (list 1 (list 2 (fold-right list nil (list 3))))
+            (list 1 (list 2 (list 3 (fold-right list nil (list )))))
+            (list 1 (list 2 (list 3 nil)))
+            (1 (2 (3 nil)))
+            ```
+
+        %md
+          ```clj
+          (fold-left list nil (list 1 2 3))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (fold-left list nil (list 1 2 3))
+            (loop nil (list 1 2 3))
+            (loop (list nil 1) (list 2 3))
+            (loop (list (list nil 1) 2) (list 3))
+            (loop (list (list (list nil 1) 2) 3) (list ))
+            (((nil 1) 2) 3)
+            ```
+
+        %md
+          ```clj
+          (fold-right cons nil (list 1 2 3))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (fold-right cons nil (list 1 2 3))
+            (cons 1 (fold-right cons nil (list 2 3)))
+            (cons 1 (cons 2 (fold-right cons nil (list 3))))
+            (cons 1 (cons 2 (cons 3 (fold-right cons nil (list )))))
+            (cons 1 (cons 2 (cons 3 nil)))
+            (1 2 3)
+            ```
+
+        %md
+          ```clj
+          (fold-left cons nil (list 1 2 3))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (fold-left cons nil (list 1 2 3))
+            (loop nil (list 1 2 3))
+            (loop (cons nil 1) (list 2 3))
+            java.lang.IllegalArgumentException: Don't know how to create ISeq from: java.lang.Long
+            ```
+
+            Why did that happen?
+
+          %data.q-a
+            %md
+              Because the second argument to `cons` must be a sequential
+              object! Remember the box and pointer drawing? The purpose of
+              `cons` is to create linked lists (like the ones depicted in those
+              figures).
+
+        %md
+          Give a property that `op` should satisfy to guarantee that
+          `fold-right` and `fold-left` will produce the same values for any
+          sequence.
+
+        %data.q-a
+          %md
+            Let's take a simple example: `(fold-left op init (list a))` unfolds as,
+
+            ```clj
+            (op init a)
+            ```
+
+            And `(fold-right op init (list a))` unfolds to:
+
+            ```clj
+            (op a init)
+            ```
+
+            So, we see that we need `op` to be commutative.
+
+            Now let's consider a slightly more convoluted example where `op` is
+            commutative (to see whether there are any further requirements on
+            `op`). Let's consider `(fold-right op init (list a b))` and see if
+            we can get it in the same form as `(fold-left op init (list a b))`.
+
+            ```clj
+            (fold-right op init (list a b))
+            (op a (op b init))
+            (op (op b init) a)
+            ```
+
+            And `(fold-left op init (list a b))`
+            
+            ```clj
+            (op (op init a) b)
+            (op b (op init a))
+            ```
+
+            So, in order for `(fold-right op init (list a b))` to equal
+            `(fold-left op init (list a b))`, we require `(op (op b init)
+            a)`=`(op b (op init a))`. That property is called associativity.
+
+            Now let's assume that our operation `op` is both commutative and
+            associative. Let's prove that no matter the size of the list, nor
+            the initial value (as long as it is an acceptable one [eg not 0 for
+            division]) we will get the same value. This proof might be a little
+            tricky to comprehend if you are not mathematically inclined; so if
+            feel free to move on if this doesn't interest you.
+
+            Let's prove this by induction on `(count items)`, where `items` is
+            the list argument to the `fold-left` and `fold-right` procedures.
+
+            The base case is already taken care of above (cases `count`=1 and 2
+            were both done above). Now let's pick an \\(n>1\\) and assume that
+            for all \\(k\lt n\\), if the list has \\(k\\) items, fold left and
+            fold right are the same with this list and our specified operation
+            and initial value.
+
+            Then, we take `items` to be a list with \\(n\\) items in it. For
+            ease of notation, I will consider the list to be `(1 2 3 4 ... n)`,
+            but I will not actually consider the elements of the list to be
+            numbers necessarily. I make no assumption as to the content of the
+            list or the nature of the operator (other than it being commutative
+            and associative). To reaffirm the fact that we are not dealing with
+            a concrete list here, I will denote the list as `(1 2... n)`
+            without the `list` operator in front.
+
+            ```clj
+            (fold-right op init items)
+            =(fold-right op init (1 2 ... n))
+            =(op 1 (op 2 (op ... (op n init))))
+            =(op 1 (op 2 (op ... (op init n))))
+            =(op 1 (op 2 (op ... (op (op <n-1> init) n))))
+            =(op 1 (op 2 (op ... (op (op init <n-1>) n))))
+            ...
+            =(op (op ... (op init 1) 2) ... n)
+            =(fold-left op init items)
+            ```
+
+      %data.exercise
+        %md
+          Complete the following definitions of `reverse` [exercise
+          2.18](#!/sicp/ch/2/ex/18/) in terms of `fold-righ` and `fold-left`
+          from [exercise 2.38](#!/sicp/ch/2/ex/38/):
+
+          ```clj
+          (defn reverse [items]
+            (fold-right (fn [x y] <??>) nil items))
+
+          (defn reverse [items]
+            (fold-left (fn [x y] <??>) nil itmes))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (defn reverse [items]
+              (fold-right (fn [x y] (concat y (list x))) nil itms))
+
+            (defn reverse [items]
+              (fold-left (fn [x y] (conj x y)) nil items))
+            ```
+
+            Or, if we want to use `cons` instead of `conj`:
+
+            ```clj
+            (defn reverse [items]
+              (fold-left (fn [x y] (cons y x)) nil itmes))
+            ```
+
+    %data.ssub{:title "Nested Mappings"}
+      %md
+        We can extend the sequence paradigm to include many computations that
+        are commonly expressed using nested loops.<<This approach to nested
+        mappings was shown to us by David Turner, whose languages KRC and
+        Miranda provide elegant formalisms for dealing with these constructs.
+        The examples in this section (see also [exercise
+        2.42](#!/sicp/ch/2/ex/42/) are adapted from Turner 1981. In [section
+        3.5.3](#!/sicp/ch/3/sect/5/sub/3/), we&#39;ll see how this approach
+        generalizes to infinite sequences.>> Consider this problem: Given a
+        positive integer \\(n\\), find all ordered pairs of distinct positive
+        integers \\(i\\) and \\(j\\), where \\(1\lt j\lt i\lt n\\), such that
+        \\(i + j\\) is prime. For example, if \\(n\\) is 6, then the pairs are
+        the following:
+
+        $$\begin{array}{l | r r r r r r r}
+        i & 2 & 3 & 4 & 4 & 5 & 6 & 6 \\\\
+        j & 1 & 2 & 1 & 3 & 2 & 1 & 5 \\\\
+        \\hline
+        i+j & 3 & 5 & 5 & 7 & 7 & 7 & 11 \end{array}$$
+
+        A natural way to organize this computation is to generalize the
+        sequence of all ordered pairs of positive integers less than or equal
+        to \\(n\\), filter to select those paris whose sum is prime, and then,
+        for each pair \\((i,j)\\) that passes the filter, produce the triple
+        \\((i, j, i+j)\\).
+
+        Here is a way to generate the sequence of pairs: For each integer
+        \\(i\leq n\\), enumerate the integers \\(j\lt i\\), and for each such
+        \\(i\\) and \\(j\\) generate the pair \\((i,j)\\). In terms of sequence
+        operations, we map along the sequence `(range 1 (inc n))`. For each
+        \\(i\\) in this sequence, we map along the sequence `(range 1 i 1)`.
+        For each \\(j\\) in this latter sequence, we generate the pair `(list i
+        j)`. This gives us a sequence of pairs for each \\(i\\). Combining all
+        the sequences for all the \\(i\\) (by accumulating with `concat`)
+        produces the required sequence of pairs:<<Note the behavior of `range`.>>
+
+        ```clj
+        (accumulate concat
+                    nil
+                    (map (fn [i]
+                           (map (fn [j] (list i j))
+                                (range 1 i)))
+                         (range 1 (inc n))))
+        ```
+
+        The combination of mapping and accumulating with `concat` is so common
+        in this sort of program that we will isolate it as a separate
+        procedure:
+
+        ```clj
+        (defn flatmap [proc seq]
+          (accumulate append nil (map proc seq)))
+        ```
+
+        Now filter this sequence of pairs to find those whose sum is prime. The
+        filter predicate is called for each element of the sequence; its
+        argument is a pair and it must extract the integers from the pair.
+        Thus, the predicate to apply to each element in the sequence is
+
+        ```clj
+        (defn prime-sum? [pair]
+          (prime? (+ (first pair) (second pair))))
+        ```
+
+        Finally, generate the sequence of results by mapping over the filtered
+        pairs using the following procedure, which constructs a triple
+        consisting of the two elements of the pair along with their sum:
+
+        ```clj
+        (defn make-pair-sum [pair]
+          (list (first pair) (second pair) (+ (first pair) (second pair))))
+        ```
+
+        Combining all these steps yields the complete procedure:
+
+        ```clj
+        (defn prime-sum-pairs [n]
+          (make-pair-sum
+            (filter prime-sum?
+              (flatmap
+                (fn [i]
+                  (map (fn [j] (list i j))
+                       (range 1 i)))
+                (range 1 (inc n))))))
+        ```
+
+        Nested mappings are also useful for sequences other than those that
+        enumerate intervals. Suppose we wish to generate all the permutations
+        of a set \\(S\\); that is, all the ways of ordering the items in the
+        set. For instance, the permutations of {1,2,3} are {1,2,3}, {1,3,2},
+        {2,1,3}, {2,3,1}, {3,1,2}, and {3,2,1}. Here is a plan for generating
+        the permutations of \\(S\\): For each item \\(x\\) in \\(S\\),
+        recursively generate the sequence of permutations of \\(S-x\\),<<The
+        set \\(S-x\\) is the set of all elements of \\(S\\), excluding
+        \\(x\\)>> and adjoin \\(x\\) to the front of each one. This yields, for
+        each \\(x\\) in \\(S\\), the sequence of permutations of \\(S\\) that
+        begin with \\(x\\).  Combining these sequences for all \\(x\\) gives
+        all the permutations of \\(S\\):<<Semicolons in Scheme code are used to
+        introduce comments. Everything from the semicolon to the end of the
+        line is ignored by the interpreter. In this book we don&#39;t use many
+        comments; we try to make our programs self-documenting by using
+        descriptive names.>>
+
+        ```clj
+        (defn permutations [s]
+          (if (empty? s)      ; empty set?
+              (list (list ))  ; sequence containing only the empty list
+              (flatmap (fn [x]
+                         (map (fn [p] (cons x p))
+                              (permutations (remove x s))))
+                       s)))
+        ```
+
+        Notice how this strategy reduces the problem of generating permutations
+        of \\(S\\) to the problem of generating the permutations of sets with
+        fewer elements than \\(S\\). In the terminal case, we work our way down
+        to the empty list, which represents a set of no elements. For this, we
+        generate `(list (list ))`, which is a sequence with one item, namely
+        the set with no elements. The remove procedure used in permutations
+        returns all the items in a given sequence except for a given item. This
+        can be expressed as a simple filter:
+
+        ```clj
+        (defn remove [item things]
+          (filter #(not= item %) 
+                  things))
+        ```
+
+    %data.exercises

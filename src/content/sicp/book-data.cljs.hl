@@ -1,0 +1,54 @@
+(ns content.sicp.book-data
+  (:require [ui.book     :as book]
+            [ui.book-toc :as toc]))
+
+(def sicp-data (cell {:short-title "SICP" 
+                      :title "Structure and Interpretation of Computer Programs" 
+                      :tagline "With Clojure!"
+                      :location "sicp"}))
+
+
+
+(defelem toc [_ _]
+  (binding [book/*book-data* sicp-data]
+    (toc/toc)))
+
+
+
+
+(defelem container [attr kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/container) attr kids)))
+(defelem about [attr kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/about :title "about") attr kids)))
+(defelem chapter [{:keys [title]} kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/chapter :title title) kids)))
+(defelem sect [{:keys [title]} kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/sect :title title) kids)))
+(defelem subsect [{:keys [title]} kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/subsect :title title) kids)))
+(defelem ssub [{:keys [title]} kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/ssub :title title) kids)))
+(defelem exercises [attr kids]
+  (binding [book/*book-data* sicp-data]
+    (book/exercises attr kids)))
+(defelem exercise [attr kids]
+  (binding [book/*book-data* sicp-data]
+    (book/exercise attr kids)))
+(defelem q-a [_ kids]
+  (binding [book/*book-data* sicp-data]
+    (book/q-a kids)))
+(defelem footnote [attr kids]
+  (binding [book/*book-data* sicp-data]
+    (book/footnote attr kids)))
+(defelem fig [{:keys [footer]} kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/fig :footer footer) kids)))
+(defelem image [attr kids]
+  (binding [book/*book-data* sicp-data]
+    (apply (book/image) attr kids)))

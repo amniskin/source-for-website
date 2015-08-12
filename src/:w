@@ -1,0 +1,30 @@
+(ns content.home.main
+  (:require [ui.style :as style]))
+
+(defelem content [attr kids]
+  (style/page :name "home"
+    (style/jumbotron
+      (style/container
+        (div :class "col col-1g-12 col-md-12 col-sm-12"
+          (h1 "Λaron Niskin")
+          (p "Welcome to my site."))))
+    (style/container
+      (style/row
+        (style/content-bubble
+          (h3 "First things")
+          (p "we could have some content here"))
+        (style/content-bubble
+          (h3 "Second things")
+          (p "we could have some more content here, and I'd
+             like to see how this reacts to different
+             screen sizes and everything. So I'm going
+             to make a loner paragraph of nonsense.
+             Ipsum blah blah blah pretend like I wrote that
+             latin stuff."))
+        (style/content-bubble
+          (h3 "Third things")
+          (p "we could have some content here
+             like to see how this reacts to different
+             screen sizes and everything. So I'm going
+             to make a loner paragraph of nonsense.
+             Ipsum blah blah blah pretend like I wrote that"))))))

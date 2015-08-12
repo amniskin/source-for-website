@@ -1,0 +1,1 @@
+boot watch checkout -d tailrecursion/boot-hoplon:0.1.0 dev

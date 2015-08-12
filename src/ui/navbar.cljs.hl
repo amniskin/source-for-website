@@ -1,0 +1,44 @@
+(ns ui.navbar
+  (:require [ui.info  :as info]
+            [ui.style :as style]
+            [clojure.string :as string]))
+
+(def home info/home)
+
+(defelem nav-button [{:keys [name]} kids]
+  (button :type "button"
+          :class (cell= {:navbar-toggle true
+                         :collapsed     true
+                         :active        (= info/nav-active name)})
+          :click #(cond (not @info/nav-active) (reset! info/nav-active name)
+                        (= @info/nav-active name) (reset! info/nav-active nil)
+                        :else (reset! info/nav-active name))
+          kids))
+
+(defelem bar [_ kids]
+  (div :class "navbar navbar-inverse navbar-fixed-top"
+       (style/container kids)))
+
+(defelem header2 [_ kids]
+  (apply (div :class "navbar-header") kids))
+
+(defelem brand [_ kids]
+  (apply
+    (a :class "navbar-brand"
+       :click #(reset! info/nav-active nil)
+       :href home) kids))
+
+(defelem menu2 [attr kids]
+  (div :class (cell= {:collapse true
+                      :navbar-collapse true
+                      :in (= info/nav-active "menu")})
+       (apply (ul :class "nav navbar-nav") attr kids)))
+
+(defelem item [{:keys [name]} _]
+  (let [lc-name (string/lower-case name)] 
+    (li :class (cell= {:active (= info/location lc-name)})
+        (a :click #(do (reset! info/scroll-location nil)
+                       (reset! info/scroll-location lc-name)
+                       (reset! info/nav-active nil))
+           :href (str "#!/" lc-name "/") name))))
+
