@@ -13,7 +13,7 @@
 
 (defelem content [attr kids]
   (style/page :name "home"
-    (nav/static)
+    (nav/fixed)
     (div :class "fade-bg"
       (top/content) 
       #_(highlights/content)
