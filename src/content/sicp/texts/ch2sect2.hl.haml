@@ -2191,3 +2191,228 @@
         ```
 
     %data.exercises
+      %data.exercise
+        %md
+          Define a procedure `unique-pairs` that, given an integer \\(n\\),
+          generates the sequence of pairs \\((i,j)\\) with \\(1\leq j\lt i\leq
+          n\\). Use `unique-pairs` to simplify the definition of
+          `prime-sum-pairs` given above.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn make-pairs [n]
+              (map #(list % n)
+                (range 1 n)))
+
+            (devn unique-pairs [n]
+              (flatmap make-pairs (range 1 n)))
+            ```
+
+            So that,
+
+            ```clj
+            (defn prime-sum-pairs [n]
+              (make-pair-sum
+                (filter prime-sum?
+                        (unique-pairs n))))
+            ```
+
+      %data.exercise
+        %md
+          Write a procedure to find all ordered triples of distinct positive
+          integers \\(i\\), \\(j\\), and \\(k\\) less than or equal to a given
+          integer \\(n\\) that sum to a given integer \\(s\\).
+
+        %data.q-a
+          %md
+            ```clj
+            (defn make-triples [pair]
+              (map #(list % (first pair) (second pair)) (range 1 (first pair))))
+
+            (defn unique-triples [n]
+              (flatmap make-triples 
+                       (unique-pairs n)))
+
+            (defn sum-filter? [s things]
+              (= s (reduce + things)))
+
+            (defn triple-sum [n s]
+              (filter #(sum-filter? s %)
+                      (unique-triples n)))
+            ```
+
+      %data.exercise
+        %data.fig{:footer "A solution to the eight-queens puzzle."}
+        %md
+          The "eight-queens puzzle" asks how to place eight queens on a
+          chessboard so that no queen is in check from any other (i.e., no two
+          queens are in the same row, column, or diagonal). One possible
+          solution is shown in [figure 2.8](#!/sicp/ch/2/fig/8/). One way to
+          solve the puzzle is to work across the board, placing a queen in each
+          column. Once we have placed \\(k - 1\\) queens, we must place the
+          \\(k\\)th queen in a position where it does not check any of the
+          queens already on the board. We can formulate this approach
+          recursively: Assume that we have already generated the sequence of
+          all possible ways to place \\(k - 1\\) queens in the first \\(k -
+          1\\) columns of the board. For each of these ways, generate an
+          extended set of positions by placing a queen in each row of the
+          \\(k\\)th column. Now filter these, keeping only the positions for
+          which the queen in the \\(k\\)th column is safe with respect to the
+          other queens. This produces the sequence of all ways to place k
+          queens in the first \\(k\\) columns. By continuing this process, we
+          will produce not only one solution, but all solutions to the puzzle.
+
+          We implement this solution as a procedure `queens`, which returns a
+          sequence of all solutions to the problem of placing \\(n\\) queens on
+          an \\(n\times n\\) chessboard. `Queens` has an internal procedure
+          `queen-cols` that returns the sequence of all ways to place queens in
+          the first \\(k\\) columns of the board.
+
+          ```clj
+          (defn queens [board-size]
+            (let [queen-cols 
+                  (fn [k] 
+                      (if (= k 0)
+                          (list empty-board)
+                          (filter
+                            (fn [positions] (safe? k positions))
+                            (flatmap
+                              (fn [rest-of-queens]
+                                (map (fn [new-row]
+                                  (adjoin-position new-row 
+                                                   k 
+                                                   rest-of-queens))
+                                     (range 1 (inc board-size))))
+                              (queen-cols (dec k))))))]
+              (queen-cols board-size)))
+          ```
+
+          In this procedure `rest-of-queens` is a way to place \\(k - 1\\)
+          queens in the first \\(k - 1\\) columns, and `new-row` is a proposed
+          row in which to place the queen for the \\(k\\)th column. Complete
+          the program by implementing the representation for sets of board
+          positions, including the procedure `adjoin-position`, which adjoins a
+          new row-column position to a set of positions, and `empty-board`,
+          which represents an empty set of positions. You must also write the
+          procedure `safe?`, which determines for a set of positions, whether the
+          queen in the \\(k\\)th column is safe with respect to the others.
+          (Note that we need only check whether the new queen is safe -- the
+          other queens are already guaranteed safe with respect to each other.)
+
+        %data.q-a
+          %md
+            ```clj
+            (defn make-position [row column]
+              (list row column))
+            (defn get-row [position]
+              (first position))
+            (defn get-column [position]
+              (second position))
+            (def empty-board (list ))
+            (defn adjoin-position [row column set-of-positions]
+              (conj set-of-positions (make-position row column)))
+            (defn same-row? [p1 p2]
+              (= (get-row p1) (get-row p2)))
+            (defn same-column? [p1 p2]
+              (= (get-column p1) (get-column p2)))
+            (defn same-diagonal? [p1 p2]
+              (or (= (- (get-row p1) (get-column p1))
+                     (- (get-row p2) (get-column p2)))
+                  (= (+ (get-row p1) (get-column p1))
+                     (+ (get-row p2) (get-column p2)))))
+            (defn check-fn? [position]
+              (some-fn #(same-row? position %)
+                       #(same-column? position %)
+                       #(same-diagonal? position %)))
+            (defn get-queen-by-row [k collection]
+              (some #(= k (get-row %)) collection))
+            (defn in-check? [new-position old-positions]
+              (some (check-fn? new-position) old-positions))
+
+            (defn safe? [k positions]
+              (not (in-check? (get-queen-by-row k) positions)))
+            ```
+
+      %data.exercise
+        %md
+          Louis Reasoner is having a terrible time doing [exercise
+          2.42](#!/sicp/ch/2/ex/42/). His `queens` procedure seems to work, but
+          it runs extremely slowly. (Louis never does manage to wait long
+          enough for it to solve even the \\(6\times 6\\) case.) When Louis
+          asks Eva Lu Ator for help, she points out that he has interchanged
+          the order of the nested mappings in the `flatmap`, writing it as
+
+          ```clj
+          (flatmap
+            (fn [new-row]
+              (map (fn [rest-of-queens]
+                     (adjoin-position new-row k rest-of-queens))
+                   (queen-cols (dec k))))
+            (range 1 (inc board-size)))
+          ```
+
+          Explain why this interchange makes the program run slowly. Estimate
+          how long it will take Louis's program to solve the eight-queens
+          puzzle, assuming that the program in [exercise
+          2.42](#!/sicp/ch/ex/42/) solce the puzzle in time \\(T\\).
+
+        %data.q-a
+          %md
+            Every iteration of `flatmap` would incur an entire computation of
+            `(queen-cols (dec k))`. This would be very computationally
+            expensive. Luckily, in today's computing environment, we have
+            something called the Just In Time compiler. The Just In Time
+            compiler runs at runtime and looks for values that are being
+            computed repeatedly, then saves them so as to improve performance.
+            It's basically a reactive method of improving performace that will
+            store things like `(queen-cols 5)` so that it doesn't have to be
+            computed so many times.
+
+            However, let's pretend as though we did not have the JIT compiler
+            (as was the case when this book was written). Then, for each
+            iteration in the `flatmap`, we'd have 8 computations of
+            `(queen-cols (dec k))` (one for each new column in the new row),
+            and for each of those calls we'd have a similar situation. So for
+            instance, when \\(k=3\\), we'd end up computing `(queen-cols 2)` 8
+            times, and for each one of those we'd compute `(queen-cols 1)` 8
+            times, and for each one of those, we'd compute `(queen-cols 0)` 8
+            times. So the number of times we'd compute `queen-cols` for
+            \\(k=3\\) would by \\(8^3\\). Through similar reasoning, we can
+            deduce that to compute `(queen-cols 8)`, we'd have to compute
+            `queen-cols` \\(8^8\\) times. So, since that's the bulk of the
+            computation, we can deduce that the time taken would be \\(T^8\\)
+            (where \\(T\\) is measured in computation cycles).
+
+    %data.subsect{:title "Example: A Picture Language"}
+      %md
+        This section presents a simple language for drawing pictures that
+        illustrates the power of data abstraction and closure, and also
+        exploits higher-order procedures in an essential way. The language is
+        designed to make it easy to experiment with patterns such as the ones
+        in [figure 2.9](#!/sicp/ch/2/fig/9/), which are composed of repeated
+        elements that are shifted and scaled.<<The picture language is based on
+        the language Peter Henderson created to construct images like M.C.
+        Escher&#39;s "Square Limit" woodcut (see Henderson 1982). The woodcut
+        incorporates a repeated scaled pattern, similar to the arrangements
+        drawn using the `square-limit` procedure in this section.>> In this
+        language, the data objects being combined are represented as procedures
+        rather than as list structure. Just as `cons`, which satisfies the
+        closure property, allowed us to easily build arbitrarily complicated
+        list structure, the operations in this language, which also satisfy the
+        closure property, allow us to easily build arbitrarily complicated
+        patterns.
+
+      %img{:src "img/sicp/figure2_9b.gif"}
+      %data.fig{:number 2 :footer "Designs generated with the picture language."}
+    
+    %data.ssub{:title "The Picture Language"}
+      %md
+        When we began our study of programming in [section
+        1.1](#!/sicp/ch/1/sect/1/), we emphasized the importance of describing
+        a language by focusing on the language's primitives, its means of
+        combination, and its means of abstraction. We'll follow that framework
+        here.
+
+        Part of the elegance of this picture language is that there is only one
+        kind of element, called a *pointer*
