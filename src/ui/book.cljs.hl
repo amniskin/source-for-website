@@ -8,6 +8,7 @@
 (def ^:dynamic *book-data* (cell {}))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;for scroll-spy kinda functionality
 (defc scroll-location nil)
 (defc= scroll-map (->> (string/split scroll-location #"/")
