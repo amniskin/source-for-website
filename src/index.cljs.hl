@@ -2,8 +2,8 @@
   (:require [ui.info             :as info]
             [ui.style            :as style]
             [ui.navbar           :as nav]
+            [ui.footer           :as footer]
             [content.sicp.main   :as sicp]
-            [content.footer.main :as footer]
             [content.cv.main     :as cv]
             [content.home.main   :as home]))
 
@@ -17,23 +17,8 @@
     (script :type "text/javascript" 
             :src "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"))
   (body :height "100vh"
-    (nav/bar
-      (nav/header2
-        (nav/nav-button
-          (span :style "color:black;"
-                :class (cell= {:glyphicon true
-                               :glyphicon-chevron-down (not (= "menu" info/nav-active))
-                               :glyphicon-chevron-up   (= "menu" info/nav-active)}))
-          :name "menu")
-        (nav/brand "Λaron Niskin"))
-      (nav/menu2
-        (nav/item :name "Home")
-        (nav/item :name "SICP")
-        (nav/item :name "CV")
-       ))
     (div
-      (div :style "height:50px;")
       (home/content)
       (sicp/content)
       (cv/content)
-      (footer/content))))
+      )))

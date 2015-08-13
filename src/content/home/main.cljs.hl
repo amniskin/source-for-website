@@ -1,5 +1,8 @@
 (ns content.home.main
   (:require [ui.style                  :as style]
+            [ui.navbar                 :as nav]
+            [ui.footer                 :as footer]
+            [content.home.subjects     :as subjects]
             [content.home.highlights   :as highlights]
             [content.home.contact      :as contact]
             [content.home.testimonials :as testimonials]
@@ -10,15 +13,11 @@
 
 (defelem content [attr kids]
   (style/page :name "home"
+    (nav/static)
     (div :class "fade-bg"
       (top/content) 
-      #_(comment style/jumbotron
-        (style/container
-          (div :class "col col-1g-12 col-md-12 col-sm-12"
-            (h1 "Tutoring")
-            (p "Need a tagline and a title..."))))
-      (style/divider)
-      (highlights/content)
+      #_(highlights/content)
+      (subjects/content)
       (style/divider)
       (fiu/content)
       (style/divider)
@@ -26,4 +25,6 @@
       (style/divider)
       (um/content)
       (style/divider)
-      (contact/content))))
+      #_(style/divider)
+      (contact/content)
+      (footer/content))))

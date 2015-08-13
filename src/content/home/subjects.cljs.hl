@@ -1,0 +1,30 @@
+(ns content.home.subjects
+  (:require [ui.style :as style]))
+
+(defelem content [attr kids]
+  (style/container
+    (style/row
+      (style/img-content-bubble
+        :src "img/highlights/my-math-icon.png"
+        (h3 "Mathematics")
+        (p "Not only did I major in Mathematics for my undergrad, but I
+           continue my studies to this day. Whether you're struggling with some
+           Abstract Algebra or you need some help with your High School Algebra
+           course, I can help."))
+
+      (style/img-content-bubble
+        :src "img/highlights/my-chem-icon.png"
+        (h3 "Chemistry")
+        (p "To understand Chemistry is to understand the atom. That is what
+           initially drew me to the subject. In fact, in 2010, Chemistry 1045
+           was the first subject I tutored professionally. From CHM 1045 to
+           Organic Chemistry, I can help."))
+
+      (style/img-content-bubble
+        :src "img/highlights/my-physics-icon.png"
+        (h3 "Physics")
+        (p "Tha nature of our universe is no small subject, but I say, \"let's
+           get started!\" The fact that many phenomena in nature are
+           predictable via mathematical formalism excites me still. From PHY
+           1045 to Quantum Mechanics, I can help.")))))
+

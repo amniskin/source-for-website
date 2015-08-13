@@ -1,9 +1,11 @@
 (ns content.cv.main
-  (:require [ui.style :as style]
-            [ui.info  :as info]))
+  (:require [ui.style  :as style]
+            [ui.info   :as info]
+            [ui.navbar :as nav]))
 
 (defelem content [_ _]
   (style/page :name "cv"
+    (nav/fixed)
     (iframe :width "100%"
             :height (cell= (- info/screen-height 50))
             :src "pdf/My_CV.pdf"

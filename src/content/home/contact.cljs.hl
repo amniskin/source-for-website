@@ -112,6 +112,13 @@
          either try to accommodate your needs myself, or I will do my best to
          find a tutor who does accommodate your needs.")
       
-      (p (span :class "glyphicon glyphicon-earphone") (a :href "tel: 3058946475" "  (305) 894-6475"))
-      
-      (p (span :class "glyphicon glyphicon-envelope") (a :href "mailto: aaron@math-busters.com" "  aaron@math-busters.com")))))
+      (div ;style/row
+        (div ;:class "col-md-8 col-sm-8 col-xs-12"
+          (p (span :class "glyphicon glyphicon-earphone") 
+             (a :href "tel: 3058946475" "  (305) 894-6475"))
+
+          (p (span :class "glyphicon glyphicon-envelope") 
+             (a :href "mailto: aaron@math-busters.com" "  aaron@math-busters.com")))
+        #_(div :class "col-md-4 col-sm-4 hidden-xs"
+          (img :src "img/home/question-answer.png"
+               :class "img-responsive"))))))

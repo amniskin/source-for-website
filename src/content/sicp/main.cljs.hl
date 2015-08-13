@@ -1,5 +1,7 @@
 (ns content.sicp.main
   (:require [ui.style                    :as style]
+            [ui.navbar                   :as nav]
+            [ui.footer                   :as footer]
             [content.sicp.book-data      :as data]
             [content.sicp.texts.about    :as about]
             [content.sicp.texts.ch1      :as ch1]
@@ -13,6 +15,7 @@
 
 (defelem content [attr kids]
   (style/page :name "sicp"
+    (nav/fixed)
     (style/container
       (style/sidebar
         (data/toc))
@@ -26,4 +29,5 @@
           (ch2/content)
           (ch2sect1/content)
           (ch2sect2/content)
+          (footer/content)
           )))))

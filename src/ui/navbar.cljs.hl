@@ -3,35 +3,37 @@
             [ui.style :as style]
             [clojure.string :as string]))
 
+(defc nav-active nil)
 (def home info/home)
 
 (defelem nav-button [{:keys [name]} kids]
   (button :type "button"
           :class (cell= {:navbar-toggle true
                          :collapsed     true
-                         :active        (= info/nav-active name)})
-          :click #(cond (not @info/nav-active) (reset! info/nav-active name)
-                        (= @info/nav-active name) (reset! info/nav-active nil)
+                         :active        (= nav-active name)})
+          :click #(cond (not @nav-active) (reset! nav-active name)
+                        (= @nav-active name) (reset! nav-active nil)
                         :else (reset! info/nav-active name))
           kids))
 
-(defelem bar [_ kids]
+(defelem fixed-bar [_ kids]
   (div :class "navbar navbar-inverse navbar-fixed-top"
        (style/container kids)))
-
+(defelem static-bar [_ kids]
+  (div :class "navbar navbar-inverse navbar-static-top"
+       :style "margin-bottom:0;"
+       (style/container kids)))
 (defelem header2 [_ kids]
   (apply (div :class "navbar-header") kids))
-
 (defelem brand [_ kids]
   (apply
     (a :class "navbar-brand"
-       :click #(reset! info/nav-active nil)
+       :click #(reset! nav-active nil)
        :href home) kids))
-
 (defelem menu2 [attr kids]
   (div :class (cell= {:collapse true
                       :navbar-collapse true
-                      :in (= info/nav-active "menu")})
+                      :in (= nav-active "menu")})
        (apply (ul :class "nav navbar-nav") attr kids)))
 
 (defelem item [{:keys [name]} _]
@@ -39,6 +41,44 @@
     (li :class (cell= {:active (= info/location lc-name)})
         (a :click #(do (reset! info/scroll-location nil)
                        (reset! info/scroll-location lc-name)
-                       (reset! info/nav-active nil))
+                       (reset! nav-active nil))
            :href (str "#!/" lc-name "/") name))))
 
+(defelem fixed-offset [_ _]
+  (div :style "height:50px"))
+
+(defelem fixed-nav [attr kids]
+  (fixed-bar
+    (header2
+      (nav-button
+        (span :style (cell= (str "color:" (if (= "menu" nav-active) "white" "black") ";"))
+              :class (cell= {:glyphicon true
+                             :glyphicon-chevron-down (not (= "menu" nav-active))
+                             :glyphicon-chevron-up   (= "menu" nav-active)}))
+        :name "menu")
+      (brand "Λaron Niskin"))
+    (menu2
+      (item :name "Home")
+      (item :name "SICP")
+      (item :name "CV")
+      )))
+
+(defelem fixed [attr kids]
+  (div (fixed-nav attr kids)
+       (fixed-offset)))
+
+(defelem static [attr kids]
+  (static-bar
+    (header2
+      (nav-button
+        (span :style (cell= (str "color:" (if (= "menu" nav-active) "white" "black") ";"))
+              :class (cell= {:glyphicon true
+                             :glyphicon-chevron-down (not (= "menu" nav-active))
+                             :glyphicon-chevron-up   (= "menu" nav-active)}))
+        :name "menu")
+      (brand "Λaron Niskin"))
+    (menu2
+      (item :name "Home")
+      (item :name "SICP")
+      (item :name "CV")
+      )))

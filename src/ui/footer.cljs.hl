@@ -1,4 +1,4 @@
-(ns content.footer.main
+(ns ui.footer
   (:require [ui.info :as info]))
 
 
