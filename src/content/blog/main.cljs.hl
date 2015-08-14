@@ -1,7 +1,0 @@
-(ns content.blog.main
-  (:require [ui.style :as style]
-            [ui.info  :as info]
-            [ui.book  :as book]))
-
-(defelem content [_ _]
-  (div "content placeholder"))

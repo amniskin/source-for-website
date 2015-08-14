@@ -1,0 +1,7 @@
+(page "book/index.html")
+
+(html
+  (head
+    (title "hey there"))
+  (body
+    (h1 "hello, world")))

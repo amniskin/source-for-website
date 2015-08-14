@@ -1,6 +1,6 @@
-(set-env!  :dependencies '[[adzerk/boot-cljs          "0.0-3308-0"]
+(set-env!  :dependencies '[[adzerk/boot-cljs          "1.7.48-SNAPSHOT"]
                            [adzerk/boot-reload        "0.3.1"]
-                           [org.clojure/clojurescript "0.0-3308"]
+                           [org.clojure/clojurescript "1.7.48"]
                            [org.clojure/clojure       "1.7.0"]
                            #_[tailrecursion/boot-hoplon "0.1.0"]
                            [tailrecursion/hoplon      "6.0.0-alpha2"]]

@@ -1,7 +1,8 @@
-(ns content.home.main
+(page "index.html"
   (:require [ui.style                  :as style]
             [ui.navbar                 :as nav]
             [ui.footer                 :as footer]
+            [ui.head                   :as head]
             [content.home.subjects     :as subjects]
             [content.home.highlights   :as highlights]
             [content.home.contact      :as contact]
@@ -11,8 +12,12 @@
             [content.home.top          :as top]
             ))
 
-(defelem content [attr kids]
-  (style/page :name "home"
+(html :lang "en"
+  (head
+    (title "Home of a Mathema-Niskin!")
+    (head/viewport)
+    (head/bootstrap)) 
+  (body
     (nav/fixed)
     (div :class "fade-bg"
       (top/content) 

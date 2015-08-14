@@ -7,7 +7,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Navbar things
 ;
-(defc nav-active nil)
 (def nav-height 50)
 (defc scroll-location nil)
 
@@ -30,7 +29,12 @@
 ; submit pull request for hoplon update?
 ;
 (defc screen-height (.height (js/jQuery js/window)))
+(let [w (js/jQuery js/window)]
+  (on! w :resize #(reset! screen-height (.height w))))
+
 (defc scroll-top 0)
+(let [d (js/jQuery js/document)]
+      (on! d :scroll #(reset! scroll-top (.scrollTop d))))
 
 (defmethod do! :scroll-to
   [elem _ v]
@@ -39,12 +43,6 @@
       (let  [body  (js/jQuery  "body,html")
              elem  (js/jQuery elem)]
         (.animate body  (clj->js  {:scrollTop  (- (.-top  (.offset elem)) nav-height)}))))))
-
-
-#_(defmethod do! :js-style
-  [elem _ kvs]
-  (let [e (js/jQuery elem)]
-    (doseq [[k v] kvs] (aset (.. (.style e) (name k) (str v))))))
 
 
 (defmethod do! :scroll-background
@@ -61,9 +59,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; For scroll location things (like scroll-spy)
 ;
-
-(let [d (js/jQuery js/document)]
-      (on! d :scroll #(reset! scroll-top (.scrollTop d))))
 
 
 (defmethod on! :on-screen
@@ -110,33 +105,35 @@
       (do-watch c #(callback  (boolean %2))))))
 
 
-(let [w (js/jQuery js/window)]
-  (on! w :resize #(reset! screen-height (.height w))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; General location stuff
 ;
-(def home "#!/home/")
-
+(def home nil)
+;
 (def route* (route-cell home))
-
+;
 ;(defc= split-route* (string/split route* #"/"))
 ;(defc= location* (first split-route*))
 ;(defc= route-map* (->> (drop 1 split-route*)
 ;                      (partition 2)
 ;                      (map (fn [[k v]] [(keyword k) v]))
 ;                      (int {})))
-
-(def route (cell= (->> (string/split route* #"/")
-                       (partition 2)
-                       (map (fn [[k v]] [(keyword k) v]))
-                       (into {}))))
-
-(defc= location (route :#!))
-
-
+;
+;(def route (cell= (->> (string/split route* #"/")
+;                       (partition 2)
+;                       (map (fn [[k v]] [(keyword k) v]))
+;                       (into {}))))
+;
+;(defc= location (route :#!))
+;
+;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Link function
 ;
+;(defmulti make-link* (fn [x] (:type x)))
+;
+;(defmethod make-link* :page [params]
+;  (str (:name params) ".html"))
+

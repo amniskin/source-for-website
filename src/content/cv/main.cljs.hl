@@ -1,10 +1,15 @@
-(ns content.cv.main
+(page "cv.html"
   (:require [ui.style  :as style]
             [ui.info   :as info]
+            [ui.head   :as head]
             [ui.navbar :as nav]))
 
-(defelem content [_ _]
-  (style/page :name "cv"
+(html :lang "en"
+  (head
+    (title "Aaron's CV")
+    (head/viewport)
+    (head/bootstrap)) 
+  (body
     (nav/fixed)
     (iframe :width "100%"
             :height (cell= (- info/screen-height 50))

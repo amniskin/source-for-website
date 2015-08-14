@@ -1,0 +1,39 @@
+(page "book/sicp.html"
+  (:require [ui.style                    :as style]
+            [ui.navbar                   :as nav]
+            [ui.footer                   :as footer]
+            [ui.head                     :as head]
+            [book.sicp.book-data      :as data]
+            [book.sicp.texts.about    :as about]
+            [book.sicp.texts.ch1      :as ch1]
+            [book.sicp.texts.ch1sect1 :as ch1sect1]
+            [book.sicp.texts.ch1sect2 :as ch1sect2]
+            [book.sicp.texts.ch1sect3 :as ch1sect3]
+            [book.sicp.texts.ch2      :as ch2]
+            [book.sicp.texts.ch2sect1 :as ch2sect1]
+            [book.sicp.texts.ch2sect2 :as ch2sect2]
+            ))
+
+(html
+  (head
+    (title "SICP... Now in Clojure!")
+    (head/bootstrap)
+    (head/viewport)
+    (head/mathjax)) 
+  (body
+    (nav/fixed)
+    (style/container
+      (style/sidebar
+        (data/toc))
+      (style/content-with-sidebar
+        (data/container
+          (about/content)
+          (ch1/content)
+          (ch1sect1/content)
+          (ch1sect2/content)
+          (ch1sect3/content)
+          (ch2/content)
+          (ch2sect1/content)
+          (ch2sect2/content)
+          (footer/content)
+          )))))

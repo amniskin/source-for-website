@@ -4,6 +4,7 @@
             [clojure.string :as string]))
 
 (defc nav-active nil)
+(def location nil)
 (def home info/home)
 
 (defelem nav-button [{:keys [name]} kids]
@@ -13,7 +14,7 @@
                          :active        (= nav-active name)})
           :click #(cond (not @nav-active) (reset! nav-active name)
                         (= @nav-active name) (reset! nav-active nil)
-                        :else (reset! info/nav-active name))
+                        :else (reset! nav-active name))
           kids))
 
 (defelem fixed-bar [_ kids]
@@ -38,11 +39,27 @@
 
 (defelem item [{:keys [name]} _]
   (let [lc-name (string/lower-case name)] 
-    (li :class (cell= {:active (= info/location lc-name)})
-        (a :click #(do (reset! info/scroll-location nil)
-                       (reset! info/scroll-location lc-name)
-                       (reset! nav-active nil))
-           :href (str "#!/" lc-name "/") name))))
+    (li :class (cell= {:active (= location lc-name)})
+        (a ;:click #(do (reset! info/scroll-location nil)
+           ;            (reset! info/scroll-location lc-name)
+           ;            (reset! nav-active nil))
+           :href (str lc-name ".html") name))))
+
+(cell= (pr :navbar (string/split (.-pathname js/location) #"/")))
+(defelem home-item [_ _]
+  (li :class (cell= {:active (= location nil)})
+      (a ;:click #(do (reset! info/scroll-location nil)
+         ;            (reset! info/scroll-location "home")
+         ;            (reset! nav-active nil))
+         :href "index.html" "Home")))
+
+(defelem sicp-item [_ _]
+  (li :class (cell= {:active (= location "book")})
+      (a ;:click #(do (reset! info/scroll-location nil)
+         ;            (reset! info/scroll-location "home")
+         ;            (reset! nav-active nil))
+         :href "book/sicp.html" "SICP")))
+
 
 (defelem fixed-offset [_ _]
   (div :style "height:50px"))
@@ -58,8 +75,8 @@
         :name "menu")
       (brand "Λaron Niskin"))
     (menu2
-      (item :name "Home")
-      (item :name "SICP")
+      (home-item)
+      (sicp-item)
       (item :name "CV")
       )))
 
@@ -78,7 +95,7 @@
         :name "menu")
       (brand "Λaron Niskin"))
     (menu2
-      (item :name "Home")
-      (item :name "SICP")
+      (home-item)
+      (sicp-item)
       (item :name "CV")
       )))

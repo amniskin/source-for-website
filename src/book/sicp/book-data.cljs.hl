@@ -1,4 +1,4 @@
-(ns content.sicp.book-data
+(ns book.sicp.book-data
   (:require [ui.book     :as book]
             [ui.book-toc :as toc]))
 

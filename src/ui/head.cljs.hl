@@ -1,0 +1,11 @@
+(ns ui.head)
+
+(defelem bootstrap [_ _]
+  (link :REL "stylesheet" :href "/css/bootstrap.css" :type "text/css"))
+
+(defelem viewport [_ _]
+  (html-meta :name "viewport" :content "width=device-width, initial-scale=1"))
+
+(defelem mathjax [_ _]
+  (script :type "text/javascript"
+          :src "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"))

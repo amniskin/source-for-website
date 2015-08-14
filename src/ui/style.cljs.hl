@@ -1,14 +1,7 @@
 (ns ui.style
   (:require [ui.info :as info]))
 
-(defc= location info/location)
-
 (def bg-color "#5CBEFF")
-
-(defelem page [{:keys [name]} kids]
-  (apply (div :toggle (cell= (= info/location name))
-              :scroll-to (cell= (= info/scroll-location name)))
-         kids))
 
 (defelem sidebar [attr kids]
   (apply (div :class "col-md-4 col-sm-4 hidden-xs") attr kids))
