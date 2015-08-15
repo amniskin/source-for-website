@@ -1,19 +1,30 @@
 (ns general.toc
   (:require [general.info :as info]
-            [general.bootstrap :as bootstrap]))
+            [general.bootstrap :as bootstrap]
+            [clojure.string    :as string]))
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;for scroll-spy kinda functionality
+
+(defc scroll-location nil)
+(defc= scroll-map (->> (string/split scroll-location #"/")
+                       (drop 1)
+                       (partition 2)
+                       (map (fn [[k v]] [(keyword k) (js/parseInt v)]))
+                       (into {})))
+(pr :toc scroll-map)
 
 (defc hover-cell nil)
 
 (defelem toc-link [{:keys [link title]} _]
-  (let [scroll-link? (cell= (= info/scroll-location link))
+  (let [scroll-link? (cell= (= scroll-location link))
         hover?       (cell= (= hover-cell link))
         active?      (cell= (or scroll-link? hover?))]
     (a :class (cell= {:active active?})
-       :click #(do (reset! info/scroll-location nil)
-                   (reset! info/scroll-location link))
+       :click #(do (reset! scroll-location nil)
+                   (reset! scroll-location link))
        :hover #(reset! hover-cell link)
        :href link title)))
 
@@ -38,24 +49,24 @@
   (apply 
     (ul :style "padding-left:10px; padding-top:0px;"
         :class (cell= {:list-unstyled true
-                       :hidden        (not (= ch (:ch info/scroll-map)))})) 
+                       :hidden        (not (= ch (:ch scroll-map)))})) 
     kids))
 
 (defelem ul-sub [{:keys [ch sect]} kids]
   (apply 
     (ul :style "padding-left:10px; padding-top:0px;"
         :class (cell= {:list-unstyled true
-                       :hidden        (not (and (= (:ch   info/scroll-map) ch)
-                                                (= (:sect info/scroll-map) sect)))})) 
+                       :hidden        (not (and (= (:ch   scroll-map) ch)
+                                                (= (:sect scroll-map) sect)))})) 
     kids))
 
 (defelem ul-ssub [{:keys [ch sect sub]} kids]
   (apply
     (ul :style "padding-left: 10px;"
         :class (cell= {:list-unstyled true
-                       :hidden        (not (and (= (:ch   info/scroll-map) ch)
-                                                (= (:sect info/scroll-map) sect)
-                                                (= (:sub  info/scroll-map) sub)))}))
+                       :hidden        (not (and (= (:ch   scroll-map) ch)
+                                                (= (:sect scroll-map) sect)
+                                                (= (:sub  scroll-map) sub)))}))
     kids))
 
 
@@ -64,7 +75,6 @@
 
 (defelem toc [{:keys [data]} _]
   (let [[one two three four] (:toc-hierarchy @data)] 
-    (pr :toc one)
     (bootstrap/row
     (div :class "col-md-3 col-sm-3 toc"
       (h3 "Table of Contents")

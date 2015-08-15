@@ -3,17 +3,32 @@
             [tailrecursion.hoplon.markdown :as md]))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; General location stuff
+;
+(def home nil)
+
+(def route* (route-cell home))
+
+(def route (cell= (->> (string/split route* #"/")
+                       (partition 2)
+                       (map (fn [[k v]] [(keyword k) v]))
+                       (into {}))))
+
+(defc scroll-location nil)
+(defc= scroll-map (->> (string/split scroll-location #"/")
+                       (partition 2)
+                       (map (fn [[k v]] [(keyword k) v]))
+                       (into {})))
+
+
 (def date (js/Date.))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Navbar things
 ;;
 (def nav-height 50)
-(defc scroll-location nil)
-(defc= scroll-map (->> (string/split scroll-location #"/")
-                       (partition 2)
-                       (map (fn [[k v]] [(keyword k) v]))
-                       (into {})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,25 +125,6 @@
       (do-watch c #(callback  (boolean %2))))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; General location stuff
-;
-(def home nil)
-
-(def route* (route-cell home))
-;
-;(defc= split-route* (string/split route* #"/"))
-;(defc= location* (first split-route*))
-;(defc= route-map* (->> (drop 1 split-route*)
-;                      (partition 2)
-;                      (map (fn [[k v]] [(keyword k) v]))
-;                      (int {})))
-;
-(def route (cell= (->> (string/split route* #"/")
-                       (partition 2)
-                       (map (fn [[k v]] [(keyword k) v]))
-                       (into {}))))
 ;
 ;(defc= location (route :#!))
 ;

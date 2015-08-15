@@ -1,26 +1,18 @@
 (ns book.general.parts
   (:require-macros [tailrecursion.hoplon.markdown :refer [md]])
-  (:require [general.info                       :as info]
+  (:require [general.info                  :as info]
+            [general.toc                   :as toc]
             [clojure.string                :as string]
             [tailrecursion.hoplon.markdown :as md]))
 
-;(defc= location info/location)
 (def ^:dynamic *book-data* (cell {}))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;for scroll-spy kinda functionality
-(defc scroll-location nil)
-(defc= scroll-map (->> (string/split scroll-location #"/")
-                       (partition 2)
-                       (map (fn [[k v]] [(keyword k) (js/parseInt v)]))
-                       (into {})))
-
 (defn make-link
-  ([ch] (str "#!/" (string/lower-case (:short-title @*book-data*)) "/ch/" ch "/"))
-  ([ch sect] (str "#!/" (string/lower-case (:short-title @*book-data*)) "/ch/" ch "/sect/" sect "/"))
-  ([ch sect sub] (str "#!/" (string/lower-case (:short-title @*book-data*)) "/ch/" ch "/sect/" sect "/sub/" sub "/"))
-  ([ch sect sub ssub] (str "#!/" (string/lower-case (:short-title @*book-data*)) "/ch/" ch "/sect/" sect "/sub/" sub "/ssub/" ssub "/")))
+  ([ch] (str "#!/ch/" ch "/"))
+  ([ch sect] (str "#!/ch/" ch "/sect/" sect "/"))
+  ([ch sect sub] (str "#!/ch/" ch "/sect/" sect "/sub/" sub "/"))
+  ([ch sect sub ssub] (str "#!/ch/" ch "/sect/" sect "/sub/" sub "/ssub/" ssub "/")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -55,8 +47,8 @@
 ; Making the general book part
 ;
 (defelem part [{:keys [size link title]} kids]
-  (div ;:scroll-to (cell= (= info/route* link))
-       :at-top #(reset! scroll-location link)
+  (div :scroll-to (cell= (= info/route* link)) 
+       :at-top #(reset! toc/scroll-location link)
        (size :class "text-left" title)
        (div :class "" kids)))
 
@@ -66,9 +58,9 @@
               :style "padding-left:10%; padding-right:5%;") attr kids))
 
 (defelem about [{:keys [title tagline]} kids]
-  (div :scroll-to (cell= (= (route-cell "#!/home/") 
+  (div :scroll-to (cell= (= info/route*
                             (str "#!/" (:short-title *book-data*) "/")))
-       :at-top #(reset! scroll-location (str "#!/" (:short-title @*book-data*) "/"))
+       :at-top #(reset! toc/scroll-location (str "#!/" (:short-title @*book-data*) "/"))
        :class "text-justify"
        (h1 :class "text-left" (:title @*book-data*))
        (h3 (:tagline @*book-data*))
