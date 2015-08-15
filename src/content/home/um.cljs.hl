@@ -1,6 +1,6 @@
 (ns content.home.um
-  (:require [ui.style :as style]))
+  (:require [general.sections :as sections]))
 
 (defelem content [_ _]
-  (style/background-section :url "img/um.jpg"
+  (sections/fixed-background-img :url "/img/um.jpg"
     "Group sessions at UM"))

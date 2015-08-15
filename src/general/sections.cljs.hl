@@ -1,0 +1,35 @@
+(ns general.sections
+  (:require [general.bootstrap  :as bootstrap]
+            [general.background :as background]))
+
+(defelem fixed-background-img [{:keys [url]} kids]
+  (background/fixed-img :url url
+    (bootstrap/container
+      (bootstrap/sm6-off3 
+        :style "padding-top: 20%;
+               padding-bottom:20%;"
+        (h2 :style "color:#ffffff;
+                   padding:20px;
+                   background-color:rgba(5,5,5,.8)"
+            kids)))))
+
+(defelem divider [attr kids]
+  (div :class "hidden-xs"
+       :style "height: 100px;"))
+
+(defelem bubble [attr kids]
+  (bootstrap/md4-xs12
+    (apply (bootstrap/well) attr kids)))
+
+(defelem img-bubble [{src :src} kids]
+  (bubble
+    (img :class "img-responsive" 
+         :src src)
+    (div :style "padding-top: 5;" kids)))
+
+(defelem sidebar [attr kids]
+  (apply (bootstrap/md4-xs-) attr kids))
+
+(defelem content-with-sidebar [attr kids]
+  (apply (bootstrap/md8-xs12) attr kids))
+

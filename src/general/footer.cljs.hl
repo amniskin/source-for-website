@@ -1,5 +1,5 @@
-(ns ui.footer
-  (:require [ui.info :as info]))
+(ns general.footer
+  (:require [general.info :as info]))
 
 
 (defelem content [_ _]

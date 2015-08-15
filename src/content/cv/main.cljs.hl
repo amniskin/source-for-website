@@ -1,8 +1,7 @@
 (page "cv.html"
-  (:require [ui.style  :as style]
-            [ui.info   :as info]
-            [ui.head   :as head]
-            [ui.navbar :as nav]))
+  (:require [general.head   :as head]
+            [general.navbar :as nav]
+            [general.pdf    :as pdf]))
 
 (html :lang "en"
   (head
@@ -11,7 +10,4 @@
     (head/bootstrap)) 
   (body
     (nav/fixed)
-    (iframe :width "100%"
-            :height (cell= (- info/screen-height 50))
-            :src "pdf/My_CV.pdf"
-            :frameborder "0")))
+    (pdf/viewer :src "/pdf/My_CV.pdf")))

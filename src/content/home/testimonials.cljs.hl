@@ -1,5 +1,6 @@
 (ns content.home.testimonials
-  (:require [ui.style :as style]))
+  (:require [general.bootstrap :as bootstrap]
+            [general.sections  :as sections]))
 
 (defelem from [{:keys [name place date]} _]
   (p :class "small"
@@ -13,11 +14,11 @@
 
 
 (defelem content [attr kids]
-  (style/container
+  (bootstrap/container
     (h1 :style "text-align: center;" "What my clients think of me.")
-    (style/divider)
-    (style/row
-      (style/content-bubble
+    (sections/divider)
+    (bootstrap/row
+      (sections/bubble
         (heading "Invaluable Asset")
         (review "Aaron has been an invaluable asset as a tutor to my nephew. He
                 is very patient, professional, and knowledgeable. He has been
@@ -27,7 +28,7 @@
                 him.") 
 
         (from :name "Sandra" :place "Miami, Fl" :date "12/02/2014"))
-      (style/content-bubble
+      (sections/bubble
         (heading "A Great Experience")
         (review "Working with Aaron has been a great experience. He is very
            knowledgeable and explains hard to understand concepts very well. He
@@ -35,7 +36,7 @@
            recommend!!")
 
         (from :name "Jasmin" :place "Miami, Fl" :date "09/22/2014"))
-      (style/content-bubble
+      (sections/bubble
         (heading "Very Likeable and Competent Tutor")
         (review "My son was unsettled by the thought of having a tutor for his HS
            Calculus course, but he needed some help. Aaron has such a laid back
@@ -44,8 +45,8 @@
            my son pass his online course with an A!")
 
         (from :name "Desiree" :place "Miami, Fl" :date "01/04/13")))
-    (style/row
-      (style/content-bubble
+    (bootstrap/row
+      (sections/bubble
         (heading "Extremely Helpful... One of the Best")
         (review "Aaron is one of the best calculus tutors I've met so far. He
                 helps you understand the methods and rules of math, and never
@@ -53,7 +54,7 @@
                 and I would definitely recommend him!")
 
         (from :name "Abdulla" :place "Miami, FL" :date "10/02/2014"))
-      (style/content-bubble
+      (sections/bubble
         (heading "Great tutor!!")
         (review "Aaron has tutored me for physics, and has done a great job so
                 far. He is really knowledgeable about the subject and explains
@@ -63,7 +64,7 @@
                 tutoring times.")
 
         (from :name "Paulina" :place "Miami, FL" :date "05/26/2012"))
-      (style/content-bubble
+      (sections/bubble
         (heading "Best Tutor Ever!")
         (review "Mr. Aaron is a very very patient tutor. When my first lesson
                 was scheduled I was so nervous because the subject (math) was

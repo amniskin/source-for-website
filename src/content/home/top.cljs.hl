@@ -1,9 +1,9 @@
 (ns content.home.top
-  (:require [ui.style :as style]))
+  (:require [general.bootstrap :as bootstrap]))
 
 (defelem content [_ _]
   (div :style "margin-top: -50px; height: 100vh; display: flex; align-items: center;"
-    (style/container
+    (bootstrap/container
       (div :class "col-lg-12 col-md-12 col-sm-12"
         (img :src "img/home/lightbulb.png"
              :style "display:block; 

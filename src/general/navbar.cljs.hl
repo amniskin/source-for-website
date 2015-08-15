@@ -1,11 +1,10 @@
-(ns ui.navbar
-  (:require [ui.info  :as info]
-            [ui.style :as style]
-            [clojure.string :as string]))
+(ns general.navbar
+  (:require [clojure.string :as string]
+            [general.bootstrap :as bootstrap]))
 
 (defc nav-active nil)
-(def location nil)
-(def home info/home)
+(def location (first (string/split (second (string/split (.-pathname js/location) #"/")) #"\.")))
+(defc height 50)
 
 (defelem nav-button [{:keys [name]} kids]
   (button :type "button"
@@ -19,18 +18,18 @@
 
 (defelem fixed-bar [_ kids]
   (div :class "navbar navbar-inverse navbar-fixed-top"
-       (style/container kids)))
+       (bootstrap/container kids)))
 (defelem static-bar [_ kids]
   (div :class "navbar navbar-inverse navbar-static-top"
        :style "margin-bottom:0;"
-       (style/container kids)))
+       (bootstrap/container kids)))
 (defelem header2 [_ kids]
   (apply (div :class "navbar-header") kids))
 (defelem brand [_ kids]
   (apply
     (a :class "navbar-brand"
        :click #(reset! nav-active nil)
-       :href home) kids))
+       :href "index.html") kids))
 (defelem menu2 [attr kids]
   (div :class (cell= {:collapse true
                       :navbar-collapse true
@@ -40,25 +39,16 @@
 (defelem item [{:keys [name]} _]
   (let [lc-name (string/lower-case name)] 
     (li :class (cell= {:active (= location lc-name)})
-        (a ;:click #(do (reset! info/scroll-location nil)
-           ;            (reset! info/scroll-location lc-name)
-           ;            (reset! nav-active nil))
-           :href (str lc-name ".html") name))))
+        (a :href (str "/" lc-name ".html") name))))
 
-(cell= (pr :navbar (string/split (.-pathname js/location) #"/")))
 (defelem home-item [_ _]
-  (li :class (cell= {:active (= location nil)})
-      (a ;:click #(do (reset! info/scroll-location nil)
-         ;            (reset! info/scroll-location "home")
-         ;            (reset! nav-active nil))
-         :href "index.html" "Home")))
+  (li :class (cell= {:active (or (= location nil)
+                                 (= location "index"))})
+      (a :href "/index.html" "Home")))
 
 (defelem sicp-item [_ _]
   (li :class (cell= {:active (= location "book")})
-      (a ;:click #(do (reset! info/scroll-location nil)
-         ;            (reset! info/scroll-location "home")
-         ;            (reset! nav-active nil))
-         :href "book/sicp.html" "SICP")))
+      (a :href "/book/sicp.html" "SICP")))
 
 
 (defelem fixed-offset [_ _]

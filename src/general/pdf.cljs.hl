@@ -1,0 +1,10 @@
+(ns general.pdf
+  (:require [general.navbar :as nav]
+            [general.info :as info]))
+
+(defelem viewer [{:keys [src]} _]
+  (iframe :width "100%"
+          :height (cell= (- info/screen-height nav/height))
+          :src    src
+          :frameborder "0"))
+

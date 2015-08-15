@@ -1,14 +1,19 @@
-(ns ui.info
-  (:require [clojure.string :as string]))
+(ns general.info
+  (:require [clojure.string :as string]
+            [tailrecursion.hoplon.markdown :as md]))
 
 
 (def date (js/Date.))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Navbar things
-;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Navbar things
+;;
 (def nav-height 50)
 (defc scroll-location nil)
+(defc= scroll-map (->> (string/split scroll-location #"/")
+                       (partition 2)
+                       (map (fn [[k v]] [(keyword k) v]))
+                       (into {})))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,7 +115,7 @@
 ; General location stuff
 ;
 (def home nil)
-;
+
 (def route* (route-cell home))
 ;
 ;(defc= split-route* (string/split route* #"/"))
@@ -120,10 +125,10 @@
 ;                      (map (fn [[k v]] [(keyword k) v]))
 ;                      (int {})))
 ;
-;(def route (cell= (->> (string/split route* #"/")
-;                       (partition 2)
-;                       (map (fn [[k v]] [(keyword k) v]))
-;                       (into {}))))
+(def route (cell= (->> (string/split route* #"/")
+                       (partition 2)
+                       (map (fn [[k v]] [(keyword k) v]))
+                       (into {}))))
 ;
 ;(defc= location (route :#!))
 ;

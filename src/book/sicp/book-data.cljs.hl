@@ -1,8 +1,9 @@
 (ns book.sicp.book-data
-  (:require [ui.book     :as book]
-            [ui.book-toc :as toc]))
+  (:require [book.general.parts :as book]
+            [general.toc        :as toc]))
 
-(def sicp-data (cell {:short-title "SICP" 
+(def sicp-data (cell {:toc-hierarchy (vector :ch :sect :sub :ssub) 
+                      :short-title "SICP" 
                       :title "Structure and Interpretation of Computer Programs" 
                       :tagline "With Clojure!"
                       :location "sicp"}))
@@ -10,15 +11,14 @@
 
 
 (defelem toc [_ _]
+  (toc/toc :data sicp-data))
+
+
+
+
+(defelem content [attr kids]
   (binding [book/*book-data* sicp-data]
-    (toc/toc)))
-
-
-
-
-(defelem container [attr kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/container) attr kids)))
+    (apply (book/content) attr kids)))
 (defelem about [attr kids]
   (binding [book/*book-data* sicp-data]
     (apply (book/about :title "about") attr kids)))

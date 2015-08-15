@@ -1,0 +1,28 @@
+(ns general.bootstrap)
+
+(defelem container [attr kids]
+  (apply (div :class "container") attr kids))
+
+(defelem jumbotron [attr kids]
+  (apply (div :class "jumbotron") attr kids))
+
+(defelem well [attr kids]
+  (apply (div :class "well") attr kids))
+
+(defelem row [attr kids]
+  (apply (div :class "row") attr kids))
+
+(defelem md4-xs- [attr kids]
+  (apply (div :class "col-md-4 col-sm-4 hidden-xs") attr kids))
+
+(defelem md4-xs12 [attr kids]
+  (apply (div :class "col-md-4 col-sm-4 col-xs-12") attr kids))
+
+(defelem md8-xs12 [attr kids]
+  (apply (div :class "col-md-8 col-sm-8 col-xs-12") attr kids))
+
+(defelem sm6-off3 [attr kids]
+  (apply (div :class "col-sm-6 
+                     col-sm-offset-3 
+                     text-center")
+         attr kids))

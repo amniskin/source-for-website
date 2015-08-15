@@ -1,0 +1,14 @@
+(ns general.layouts
+  (:require [general.bootstrap :as bootstrap]
+            [general.navbar    :as nav]
+            [general.footer    :as footer]))
+
+(defelem standard [{:keys [titled]} kids]
+  (html
+    (title titled)
+    (head/bootstrap)
+    (head/viewport))
+  (body
+    (nav/fixed)
+    (bootstrap/container attr kids)
+    (footer/content)))

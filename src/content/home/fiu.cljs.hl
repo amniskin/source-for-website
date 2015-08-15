@@ -1,5 +1,5 @@
 (ns content.home.fiu
-  (:require [ui.style :as style]))
+  (:require [general.sections :as section]))
 
 (defelem content [_ _]
-  (style/background-section :url "img/FIU_Lib.jpg" "FIU friendly!"))
+  (section/fixed-background-img :url "/img/FIU_Lib.jpg" "FIU friendly!"))

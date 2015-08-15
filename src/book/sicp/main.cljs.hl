@@ -1,8 +1,9 @@
 (page "book/sicp.html"
-  (:require [ui.style                    :as style]
-            [ui.navbar                   :as nav]
-            [ui.footer                   :as footer]
-            [ui.head                     :as head]
+  (:require [general.bootstrap        :as bootstrap]
+            [general.sections         :as sections]
+            [general.navbar           :as nav]
+            [general.footer           :as footer]
+            [general.head             :as head]
             [book.sicp.book-data      :as data]
             [book.sicp.texts.about    :as about]
             [book.sicp.texts.ch1      :as ch1]
@@ -22,11 +23,11 @@
     (head/mathjax)) 
   (body
     (nav/fixed)
-    (style/container
-      (style/sidebar
+    (bootstrap/container
+      (sections/sidebar
         (data/toc))
-      (style/content-with-sidebar
-        (data/container
+      (sections/content-with-sidebar
+        (data/content
           (about/content)
           (ch1/content)
           (ch1sect1/content)

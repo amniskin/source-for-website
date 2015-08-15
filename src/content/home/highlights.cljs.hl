@@ -1,21 +1,21 @@
 (ns content.home.highlights
-  (:require [ui.style :as style]))
+  (:require [general.bootstrap :as bootstrap]))
 
 (defelem left-img-content [{:keys [src]} kids]
-  (style/container
-    (style/row :style "display: flex; align-items: center;"
+  (bootstrap/container
+    (bootstrap/row :style "display: flex; align-items: center;"
     (div :class "col-md-4 col-sm-4 col-xs-12"
          :style "height:auto; display: block;"
       (img :class "img-responsive" 
            :style "display:inline-block; width: auto; margin-left:auto; margin-right;auto;" 
            :src src)) 
-    (style/well (apply (div :class "col-md-8 col-sm-8 col-xs-12")
+    (bootstrap/well (apply (div :class "col-md-8 col-sm-8 col-xs-12")
          kids)))))
 
 (defelem right-img-content [{:keys [src]} kids]
-  (style/container
-    (style/row :style "display: flex; align-items: center;"
-      (style/well (apply 
+  (bootstrap/container
+    (bootstrap/row :style "display: flex; align-items: center;"
+      (bootstrap/well (apply 
         (div :class "col-md-8 col-sm-8 col-xs-12"
              :style "display: flex; align-items: center;")
          kids))
@@ -27,7 +27,7 @@
     )))
 
 (defelem content [attr kids]
-  (style/container
+  (bootstrap/container
 
     (div :class "col-md-12 col-sm-12" (left-img-content :src "img/home/person-teaching.png"
                                                         (h2 "I am a Miami based tutor specializing in everything Science

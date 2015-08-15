@@ -1,4 +1,4 @@
-(ns ui.head)
+(ns general.head)
 
 (defelem bootstrap [_ _]
   (link :REL "stylesheet" :href "/css/bootstrap.css" :type "text/css"))

@@ -1,8 +1,8 @@
 (ns content.home.contact
-  (:require [ui.style :as style]))
+  (:require [general.bootstrap :as bootstrap]))
 
 (defelem content [attr kids]
-  (style/container
+  (bootstrap/container
     (div :class "col-md-8 col-sm-8 col-xs-12"
       (form 
         :action "https://docs.google.com/forms/d/16bW8Vz8Z3sjWN1LurIOy3AM64oTXO7eSkzRcVNQYKVo/formResponse" 
@@ -10,7 +10,7 @@
         :id "ss-form" 
         :target "_self" 
         :onsubmit ""
-        (style/row
+        (bootstrap/row
           (let [good? (cell nil)] (div :class "col-xs-12 col-sm-6 col-md-6"
                                        (div :class (cell= {:form-group true
                                                            :has-success false
@@ -50,7 +50,7 @@
                           :aria-hidden "true")
                     (span :id "last-nameStatus" 
                           :class "sr-only" "(success)"))))
-        (style/row
+        (bootstrap/row
           (div :class "form-group has-feedback col-md-8 col-sm-12 col-xs-12"
             (label :for "entry_254642901" 
                    :class "control-label" 
@@ -68,7 +68,7 @@
                    :id "entry_1652734510" 
                    :placeholder "Phone"
                    :name "entry_1652734510")))
-        (style/row 
+        (bootstrap/row 
           (div :class "form-group col-md-4 col-sm-12 col-xs-12"
             (label :for "entry_825591887" "Start Date")
             (input :type "date" 
@@ -112,7 +112,7 @@
          either try to accommodate your needs myself, or I will do my best to
          find a tutor who does accommodate your needs.")
       
-      (div ;style/row
+      (div ;bootstrap/row
         (div ;:class "col-md-8 col-sm-8 col-xs-12"
           (p (span :class "glyphicon glyphicon-earphone") 
              (a :href "tel: 3058946475" "  (305) 894-6475"))

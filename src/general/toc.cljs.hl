@@ -1,18 +1,19 @@
-(ns ui.book-toc
-  (:require [ui.book  :as book]
-            [ui.style :as style]
-            [ui.info  :as info]))
+(ns general.toc
+  (:require [general.info :as info]
+            [general.bootstrap :as bootstrap]))
+
+
 
 
 (defc hover-cell nil)
 
 (defelem toc-link [{:keys [link title]} _]
-  (let [scroll-link? (cell= (= book/scroll-location link))
+  (let [scroll-link? (cell= (= info/scroll-location link))
         hover?       (cell= (= hover-cell link))
         active?      (cell= (or scroll-link? hover?))]
     (a :class (cell= {:active active?})
-       :click #(do (reset! book/scroll-location nil)
-                   (reset! book/scroll-location link))
+       :click #(do (reset! info/scroll-location nil)
+                   (reset! info/scroll-location link))
        :hover #(reset! hover-cell link)
        :href link title)))
 
@@ -37,41 +38,43 @@
   (apply 
     (ul :style "padding-left:10px; padding-top:0px;"
         :class (cell= {:list-unstyled true
-                       :hidden        (not (= ch (:ch book/scroll-map)))})) 
+                       :hidden        (not (= ch (:ch info/scroll-map)))})) 
     kids))
 
 (defelem ul-sub [{:keys [ch sect]} kids]
   (apply 
     (ul :style "padding-left:10px; padding-top:0px;"
         :class (cell= {:list-unstyled true
-                       :hidden        (not (and (= (:ch   book/scroll-map) ch)
-                                                (= (:sect book/scroll-map) sect)))})) 
+                       :hidden        (not (and (= (:ch   info/scroll-map) ch)
+                                                (= (:sect info/scroll-map) sect)))})) 
     kids))
 
 (defelem ul-ssub [{:keys [ch sect sub]} kids]
   (apply
     (ul :style "padding-left: 10px;"
         :class (cell= {:list-unstyled true
-                       :hidden        (not (and (= (:ch   book/scroll-map) ch)
-                                                (= (:sect book/scroll-map) sect)
-                                                (= (:sub  book/scroll-map) sub)))}))
+                       :hidden        (not (and (= (:ch   info/scroll-map) ch)
+                                                (= (:sect info/scroll-map) sect)
+                                                (= (:sub  info/scroll-map) sub)))}))
     kids))
 
 
 
 
 
-(defelem toc [_ _]
-  (style/row
+(defelem toc [{:keys [data]} _]
+  (let [[one two three four] (:toc-hierarchy @data)] 
+    (pr :toc one)
+    (bootstrap/row
     (div :class "col-md-3 col-sm-3 toc"
       (h3 "Table of Contents")
-      (let [all-chapters (cell= (get book/*book-data* :ch))
+      (let [all-chapters (cell= (get data one))
             num-chapters (cell= (range 1 (inc (count all-chapters))))]
         (ul-ch
           (loop-tpl :bindings [ch num-chapters]
             (let [title     (cell= (get-in all-chapters [ch :title]))
                   link      (cell= (get-in all-chapters [ch :link]))
-                  all-sects (cell= (get-in all-chapters [ch :sect]))
+                  all-sects (cell= (get-in all-chapters [ch two]))
                   num-sects (cell= (range 1 (inc (count all-sects))))]
               (div
                 (li-ch :link link :title title)
@@ -79,7 +82,7 @@
                   (loop-tpl :bindings [sect num-sects]
                     (let [title    (cell= (get-in all-sects [sect :title]))
                           link     (cell= (get-in all-sects [sect :link]))
-                          all-subs (cell= (get-in all-sects [sect :sub]))
+                          all-subs (cell= (get-in all-sects [sect three]))
                           num-subs (cell= (range 1 (inc (count all-subs))))]
                       (div
                         (li-sect :link link :title title)
@@ -87,8 +90,8 @@
                           (loop-tpl :bindings [sub num-subs]
                             (let [title    (cell= (get-in all-subs [sub :title]))
                                   link     (cell= (get-in all-subs [sub :link]))
-                                  all-ssub (cell= (get-in all-subs [sub :ssub]))
-                                  num-ssub (cell= (range 1 (inc (count all-subs))))]
+                                  all-ssub (cell= (get-in all-subs [sub four]))
+                                  num-ssub (cell= (range 1 (inc (count all-ssub))))]
                               (div
                                 (li-sub :link link :title title)
                                 (ul-ssub :ch ch :sect sect :sub sub
@@ -96,4 +99,4 @@
                                     (let [title (cell= (get-in all-ssub [ssub :title]))
                                           link  (cell= (get-in all-ssub [ssub :link]))]
                                       (li-sub :link link :title title)
-                                      )))))))))))))))))))
+                                      ))))))))))))))))))))

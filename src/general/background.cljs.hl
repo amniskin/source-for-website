@@ -1,0 +1,13 @@
+(ns general.background)
+
+(defelem fixed-img [{:keys [url]} kids]
+  (div :style (str "display: block;
+                    background-image:url('" url "');
+                    background-size:length:auto 100vh;
+                    background-repeat: no-repeat;
+                    background-attachment:fixed;")
+       :on-screen* #(set! (.-backgroundPosition (.-style %1))
+                          (str "50% +"
+                               (* 1000 %2)
+                               "+ %")) 
+       kids))

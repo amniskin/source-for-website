@@ -1,6 +1,6 @@
-(ns ui.book
+(ns book.general.parts
   (:require-macros [tailrecursion.hoplon.markdown :refer [md]])
-  (:require [ui.info                       :as info]
+  (:require [general.info                       :as info]
             [clojure.string                :as string]
             [tailrecursion.hoplon.markdown :as md]))
 
@@ -61,7 +61,7 @@
        (div :class "" kids)))
 
 
-(defelem container [attr kids]
+(defelem content [attr kids]
   (apply (div :class "text-justify"
               :style "padding-left:10%; padding-right:5%;") attr kids))
 

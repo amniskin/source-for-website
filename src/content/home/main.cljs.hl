@@ -1,8 +1,8 @@
 (page "index.html"
-  (:require [ui.style                  :as style]
-            [ui.navbar                 :as nav]
-            [ui.footer                 :as footer]
-            [ui.head                   :as head]
+  (:require [general.sections         :as sections]
+            [general.navbar            :as nav]
+            [general.footer            :as footer]
+            [general.head              :as head]
             [content.home.subjects     :as subjects]
             [content.home.highlights   :as highlights]
             [content.home.contact      :as contact]
@@ -23,13 +23,13 @@
       (top/content) 
       #_(highlights/content)
       (subjects/content)
-      (style/divider)
+      (sections/divider)
       (fiu/content)
-      (style/divider)
+      (sections/divider)
       (testimonials/content)
-      (style/divider)
+      (sections/divider)
       (um/content)
-      (style/divider)
-      #_(style/divider)
+      (sections/divider)
+      #_(sections/divider)
       (contact/content)
       (footer/content))))
