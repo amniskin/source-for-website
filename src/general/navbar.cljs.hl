@@ -29,12 +29,21 @@
   (apply
     (a :class "navbar-brand"
        :click #(reset! nav-active nil)
-       :href "index.html") kids))
+       :href "/index.html") kids))
 (defelem menu2 [attr kids]
   (div :class (cell= {:collapse true
                       :navbar-collapse true
                       :in (= nav-active "menu")})
        (apply (ul :class "nav navbar-nav") attr kids)))
+
+(defelem nav-menu-button [_ _]
+  (nav-button
+    (span :style (cell= (str "color:" (if (= "menu" nav-active) "white" "black") ";"))
+          :class (cell= {:glyphicon true
+                         :glyphicon-chevron-down (not (= "menu" nav-active))
+                         :glyphicon-chevron-up   (= "menu" nav-active)}))
+    :name "menu")
+  )
 
 (defelem item [{:keys [name]} _]
   (let [lc-name (string/lower-case name)] 
@@ -54,15 +63,11 @@
 (defelem fixed-offset [_ _]
   (div :style "height:50px"))
 
-(defelem fixed-nav [attr kids]
+(defelem fixed-nav [_ kids]
   (fixed-bar
     (header2
-      (nav-button
-        (span :style (cell= (str "color:" (if (= "menu" nav-active) "white" "black") ";"))
-              :class (cell= {:glyphicon true
-                             :glyphicon-chevron-down (not (= "menu" nav-active))
-                             :glyphicon-chevron-up   (= "menu" nav-active)}))
-        :name "menu")
+      (nav-menu-button)
+      kids
       (brand "Λaron Niskin"))
     (menu2
       (home-item)
@@ -77,12 +82,8 @@
 (defelem static [attr kids]
   (static-bar
     (header2
-      (nav-button
-        (span :style (cell= (str "color:" (if (= "menu" nav-active) "white" "black") ";"))
-              :class (cell= {:glyphicon true
-                             :glyphicon-chevron-down (not (= "menu" nav-active))
-                             :glyphicon-chevron-up   (= "menu" nav-active)}))
-        :name "menu")
+      (nav-menu-button)
+      kids
       (brand "Λaron Niskin"))
     (menu2
       (home-item)

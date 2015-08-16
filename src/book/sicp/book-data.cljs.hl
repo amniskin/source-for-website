@@ -1,6 +1,7 @@
 (ns book.sicp.book-data
   (:require [book.general.parts :as book]
-            [general.toc        :as toc]))
+            [general.toc        :as toc]
+            [general.toc-mobile :as toc-mobile]))
 
 (def sicp-data (cell {:toc-hierarchy (vector :ch :sect :sub :ssub) 
                       :short-title "SICP" 
@@ -12,6 +13,9 @@
 
 (defelem toc [_ _]
   (toc/toc :data sicp-data))
+
+(defelem toc-mobile [_ _]
+  (toc-mobile/toc :data sicp-data))
 
 
 
