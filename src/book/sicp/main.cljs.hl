@@ -22,25 +22,8 @@
     (head/viewport)
     (head/mathjax)) 
   (body
-    #_(nav/fixed-bar
-      (nav/header2
-        (nav/nav-menu-button)
-        #_(nav/nav-button :name "toc"
-          (span :style (cell= (str "color:" (if (= nav/nav-active
-                                                   "toc")
-                                              "white;"
-                                              "black;")))
-                :class "glyphicon glyphicon-book")))
-      (nav/menu2
-        (nav/home-item)
-        (nav/sicp-item)
-        (nav/item :name "CV")
-        #_(data/toc-mobile)))
     (nav/fixed
-      #_(nav/nav-button :name "toc"
-        (span :style (cell= (str "color:" (if (= nav/nav-active "toc") "white;" "black;")))
-              :class "glyphicon glyphicon-book")))
-    #_(data/toc-mobile)
+      )
     (bootstrap/container
       (sections/sidebar
         (data/toc))

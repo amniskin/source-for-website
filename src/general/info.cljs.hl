@@ -35,7 +35,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Delete upon upgrade to new hoplon
 ;
-(defn do-watch
+#_(defn do-watch
   ([atom f]
    (do-watch atom nil f))
   ([atom init f]

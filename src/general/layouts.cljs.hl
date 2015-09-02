@@ -1,5 +1,6 @@
 (ns general.layouts
-  (:require [general.bootstrap :as bootstrap]
+  (:require [general.head      :as head]
+            [general.bootstrap :as bootstrap]
             [general.navbar    :as nav]
             [general.footer    :as footer]))
 
