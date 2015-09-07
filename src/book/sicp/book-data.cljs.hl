@@ -20,39 +20,67 @@
 
 
 
+;(defelem content [attr kids]
+;  (apply (book/content sicp-data) attr kids))
+;(defelem about [attr kids]
+;  (apply book/about attr kids))
+;(defelem chapter [attr kids]
+;  (apply (book/chapter sicp-data) attr kids))
+;(defelem sect [attr kids]
+;  (apply (book/sect sicp-data) kids))
+;(defelem subsect [attr kids]
+;  (apply (book/subsect sicp-data) kids))
+;(defelem ssub [attr kids]
+;  (apply (book/ssub sicp-data) kids))
+;(defelem exercises [attr kids]
+;  (apply (book/exercises sicp-data) attr kids))
+;(defelem exercise [attr kids]
+;  (apply (book/exercise sicp-data) attr kids))
+;(defelem q-a [_ kids]
+;  (book/q-a kids))
+;(defelem footnote [attr kids]
+;  (apply (book/footnote sicp-data) attr kids))
+;(defelem fig [attr kids]
+;  (apply (book/fig sicp-data) kids))
+;(defelem image [attr kids]
+;  (apply (book/image) attr kids))
+
+
+
 (defelem content [attr kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/content) attr kids)))
-(defelem about [attr kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/about :title "about") attr kids)))
-(defelem chapter [{:keys [title]} kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/chapter :title title) kids)))
-(defelem sect [{:keys [title]} kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/sect :title title) kids)))
-(defelem subsect [{:keys [title]} kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/subsect :title title) kids)))
-(defelem ssub [{:keys [title]} kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/ssub :title title) kids)))
-(defelem exercises [attr kids]
-  (binding [book/*book-data* sicp-data]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/content) attr kids)))
+(defelem about  [attr kids]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/about :title  "about") attr kids)))
+(defelem chapter  [{:keys  [title]} kids]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/chapter :title title) kids)))
+(defelem sect  [{:keys  [title]} kids]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/sect :title title) kids)))
+(defelem subsect  [{:keys  [title]} kids]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/subsect :title title) kids)))
+(defelem ssub  [{:keys  [title]} kids]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/ssub :title title) kids)))
+(defelem exercises  [attr kids]
+  (binding  [book/*book-data* sicp-data]
     (book/exercises attr kids)))
-(defelem exercise [attr kids]
-  (binding [book/*book-data* sicp-data]
+(defelem exercise  [attr kids]
+  (binding  [book/*book-data* sicp-data]
     (book/exercise attr kids)))
-(defelem q-a [_ kids]
-  (binding [book/*book-data* sicp-data]
+(defelem q-a  [_ kids]
+  (binding  [book/*book-data* sicp-data]
     (book/q-a kids)))
-(defelem footnote [attr kids]
-  (binding [book/*book-data* sicp-data]
+(defelem footnote  [attr kids]
+  (binding  [book/*book-data* sicp-data]
     (book/footnote attr kids)))
-(defelem fig [{:keys [footer]} kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/fig :footer footer) kids)))
-(defelem image [attr kids]
-  (binding [book/*book-data* sicp-data]
-    (apply (book/image) attr kids)))
+(defelem fig  [{:keys  [footer]} kids]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/fig :footer footer) kids)))
+(defelem image  [attr kids]
+  (binding  [book/*book-data* sicp-data]
+    (apply  (book/image) attr kids)))
+

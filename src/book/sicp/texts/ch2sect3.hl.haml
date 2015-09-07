@@ -489,66 +489,93 @@
         to represent \\(ax+b\\) as `(+ (* a x) b)`. Then our data
         representation for the differentiation problem is as follows:
 
-        - The variables are symbols. They are identified by the primitive predicate `symbol?`: 
-          ```clj
-          (defn variable? [x]
-            (symbol? x))
-          ```
+      %ul
+        %li
+          %md
+            The variables are symbols. They are identified by the primitive predicate `symbol?`: 
+  
+            ```clj
+            (defn variable? [x]
+              (symbol? x))
+            ```
 
-        ` Two variables are the same if the symbols representing them are `=`.
-          ```clj
-          (defn same-variable? [v1 v2]
-            (and (variable? v1)
-                 (variable? v2)
-                 (= v1 v2)))
-          ```
+        %li
+          %md
+            Two variables are the same if the symbols representing them are `=`.
+  
+            ```clj
+            (defn same-variable? [v1 v2]
+              (and (variable? v1)
+                   (variable? v2)
+                   (= v1 v2)))
+            ```
 
-        - Sums and products are constructed as lists:
-          ```clj
-          (defn make-sum [a1 a2]
-            (list '+ a1 a2))
+        %li
+          %md
+            Sums and products are constructed as lists:
+  
+            ```clj
+            (defn make-sum [a1 a2]
+              (list '+ a1 a2))
+            (defn make-product [m1 m2]
+              (list '* m1 m2))
+            ```
 
-          (defn make-product [m1 m2]
-            (list '* m1 m2))
-          ```
+        %li
+          %md
+            A sum is a list whose first element is the symbol `+`:
 
-        - A sum is a list whose first element is the symbol `+`:
-          ```clj
-          (defn sum? [x]
-            (and (seq? x)
-                 (= (first x) '+)))
-          ```
+            ```clj
+            (defn sum? [x]
+              (and (seq? x)
+                   (= (first x) '+)))
+            ```
 
-        - The addend is the second term of the sum list:
-          ```clj
-          (defn addend [s]
-            (second s))
-          ```
+        %li
+          %md
+            The addend is the second term of the sum list:
 
-        - The augend is the third term of the sum list:
-          ```clj
-          (defn augend [s]
-            (nth s 2))
-          ```
+            ```clj
+            (defn addend [s]
+              (second s))
+            ```
 
-        - A product is a list whose first element is the symbol `*`:
-          ```clj
-          (defn product? [x]
-            (and (seq? x)
-                 (= (first x) '*)))
-          ```
+        %li
+          %md
+            The augend is the third term of the sum list:
+            
+            ```clj
+            (defn augend [s]
+              (nth s 2))
+            ```
 
-        - The multiplier is the second item of the product list:
-          ```clj
-          (defn multiplier [p]
-            (second p))
-          ```
+        %li
+          %md
+            A product is a list whose first element is the symbol `*`:
 
-        - The multiplicand is the third item of the product list:
-          ```clj
-          (defn multiplicand [p]
-            (nth p 2))
-          ```
+            ```clj
+            (defn product? [x]
+              (and (seq? x)
+                   (= (first x) '*)))
+            ```
+
+        %li
+          %md
+            The multiplier is the second item of the product list:
+
+            ```clj
+            (defn multiplier [p]
+              (second p))
+            ```
+
+        %li
+          %md
+            The multiplicand is the third item of the product list:
+
+            ```clj
+            (defn multiplicand [p]
+              (nth p 2))
+            ```
 
         Thus, we need only combine these with the algorithm as embodied by
         `deriv` in order to have a working symbolic differentiation program.

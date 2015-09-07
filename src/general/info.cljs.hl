@@ -5,6 +5,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; DELETE ME UPON HOPLON UPGRADE
+;
+(defn do-watch
+  ([atom f]
+   (do-watch atom nil f))
+  ([atom init f]
+   (with-let  [k  (gensym)]
+     (f init @atom)
+     (add-watch atom k  (fn  [_ _ old new]  (f old new))))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; General location stuff
 ;
 (def home nil)

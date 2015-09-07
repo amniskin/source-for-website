@@ -1,0 +1,163 @@
+(ns book.general.data
+  (:require [general.info    :as info]
+            [general.toc     :as toc]
+            [clojure.string  :as string]))
+
+(def ^:dynamic *book-data* (cell {}))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Defining the data route
+;
+(defmulti data-route (fn [x] (get x :type)))
+
+(defmethod data-route :ch [x]
+  (let [ch (get x :ch)]
+    [:ch ch]))
+(defmethod data-route :sect [x]
+  (let [ch   (get x :ch)
+        sect (get x :sect)]
+    [:ch ch :sect sect]))
+(defmethod data-route :sub [x]
+  (let [ch   (get x :ch)
+        sect (get x :sect)
+        sub  (get x :sub)]
+    [:ch ch :sect sect :sub sub]))
+(defmethod data-route :ssub [x]
+  (let [ch   (get x :ch)
+        sect (get x :sect)
+        sub  (get x :sub)
+        ssub (get x :ssub)]
+    [:ch ch :sect sect :sub sub :ssub ssub]))
+(defmethod data-route :exs [x]
+  (let [ch   (get x :ch)
+        sect (get x :sect)
+        sub  (get x :sub)
+        ssub (get x :ssub)]
+    [:ch ch :sect sect :sub sub :ssub ssub]))
+(defmethod data-route :ex [x]
+  (let [ch   (get x :ch)
+        ex   (get x :ex)]
+    [:ch ch :ex ex]))
+(defmethod data-route :fig [x]
+  (let [ch   (get x :ch)
+        fig  (get x :fig)]
+    [:ch ch :fig fig]))
+(defmethod data-route :ftn [x]
+  (let [ch   (get x :ch)
+        ftn  (get x :ftn)]
+    [:ch ch :ftn ftn]))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Functions for getting into from *book-data*
+;
+(defn get-part [data]
+  (get-in @*book-data* (drop-last (data-route data))))
+
+(defn count-part [data]
+  (count (get-part data)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; To make the basic data
+;
+
+(defmulti make-base-data (fn [x] (get x :type)))
+
+(defmethod make-base-data :ch [x]
+  (let [ch   (inc (count-part x))]
+    (assoc x :ch ch)))
+(defmethod make-base-data :sect [x]
+  (let [ch   (count-part {:type :ch})
+        sect (inc (count-part {:type :sect :ch ch}))]
+    (assoc x :ch ch :sect sect)))
+(defmethod make-base-data :sub [x]
+  (let [ch   (count-part {:type :ch})
+        sect (count-part {:type :sect :ch ch})
+        sub  (inc (count-part {:type :sub :ch ch :sect sect}))]
+    (assoc x :ch ch :sect sect :sub sub)))
+(defmethod make-base-data :ssub [x]
+  (let [ch   (count-part {:type :ch})
+        sect (count-part {:type :sect :ch ch})
+        sub  (count-part {:type :sub :ch ch :sect sect})
+        ssub (inc (count-part {:type :ssub :ch ch :sect sect :sub sub}))]
+    (assoc x :ch ch :sect sect :sub sub :ssub ssub)))
+(defmethod make-base-data :exs [x]
+  (let [ch   (count-part {:type :ch})
+        sect (count-part {:type :sect :ch ch})
+        sub  (count-part {:type :sub :ch ch :sect sect})
+        ssub (inc (count-part {:type :ssub :ch ch :sect sect :sub sub}))]
+    (assoc x :ch ch :sect sect :sub sub :ssub ssub)))
+(defmethod make-base-data :ex [x]
+  (let [ch   (count-part {:type :ch})
+        ex   (inc (count-part {:type :ex :ch ch}))]
+    (assoc x :ch ch :ex ex)))
+(defmethod make-base-data :fig [x]
+  (let [ch   (count-part {:type :ch})
+        fig  (inc (count-part {:type :fig :ch ch}))]
+    (assoc x :ch ch :fig fig)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; To make links
+;
+(defn url-prefix [x]
+  (str "/book/" (get x :url) "/index.html"))
+
+(defmulti make-link (fn [x] (get x :type)))
+
+(defmethod make-link :ch [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)))
+(defmethod make-link :sect [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)
+       "/sect-" (get x :sect)))
+(defmethod make-link :sub [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)
+       "/sect-" (get x :sect)
+       "/sub-"  (get x :sub)))
+(defmethod make-link :ssub [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)
+       "/sect-" (get x :sect)
+       "/sub-"  (get x :sub)
+       "/ssub-" (get x :ssub)))
+(defmethod make-link :exs [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)
+       "/sect-" (get x :sect)
+       "/sub-"  (get x :sub)
+       "/ssub-" (get x :ssub)))
+(defmethod make-link :ex [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)
+       "/ex-"   (get x :ex)))
+(defmethod make-link :fig [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)
+       "/fig-"  (get x :fig)))
+(defmethod make-link :ftn [x]
+  (str (url-prefix @*book-data*)
+       "#!/ch-" (get x :ch)
+       "/ftn-"  (get x :ftn)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; To make final data
+;
+(defn insert-data [x]
+  (swap! *book-data* #(assoc-in % (data-route x) x)))
+(defn make-data [x]
+  (let [base (make-base-data x)
+        data (assoc base :link (make-link base))]
+    (do (insert-data data)
+        data)))
+

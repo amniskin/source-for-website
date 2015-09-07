@@ -3,16 +3,168 @@
   (:require [general.info                  :as info]
             [general.toc                   :as toc]
             [clojure.string                :as string]
+            #_[book.general.data             :as data]
             [tailrecursion.hoplon.markdown :as md]))
 
-(def ^:dynamic *book-data* (cell {}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Making the titles
+;;
+;(defn general-title [size title]
+;  (size :class "text-left" title))
+;
+;(defmulti make-title (fn [x] (get x :type)))
+;
+;(defmethod make-title :ch [x]
+;  (let [title (str (get x :ch) 
+;                   " - " 
+;                   (get x :title))]
+;    (general-title h1 title)))
+;(defmethod make-title :sect [x]
+;  (let [title (str (get x :ch)
+;                   "."
+;                   (get x :sect)
+;                   " - "
+;                   (get x :title))]
+;    (general-title h2 title)))
+;(defmethod make-title :sub [x]
+;  (let [title (str (get x :ch)
+;                   "."
+;                   (get x :sect)
+;                   "."
+;                   (get x :sub)
+;                   " - "
+;                   (get x :title))]
+;    (general-title h3 title)))
+;(defmethod make-title :ssub [x]
+;  (let [title (get x :title)]
+;    (general-title h4 title)))
+;(defmethod make-title :ex [x]
+;  (let [title (str "Exercise "
+;                   (get x :ch)
+;                   "."
+;                   (get x :ex))]
+;    (general-title h3 title)))
+;
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Making the general book part
+;;
+;(defelem part [{:keys [link] :as attr} kids]
+;  (div :scroll-to (cell= (= info/route* link)) 
+;       :at-top #(reset! toc/scroll-location link)
+;       (make-title attr)
+;       (apply div kids)))
+;
+;
+;(defelem part [{:keys [size link title]} kids]
+;  (div :scroll-to (cell= (= info/route* link)) 
+;       :at-top #(reset! toc/scroll-location link)
+;       (size :class "text-left" title)
+;       (div :class "" kids)))
+;
+;
+;(defelem content [attr kids]
+;  (apply (div :class "text-justify"
+;              :style "padding-left:10%; padding-right:5%;") attr kids))
+;
+;(defelem about [{:keys [title tagline]} kids]
+;  (div :scroll-to (cell= (= info/route*
+;                            (str "#!/" (:short-title *book-data*) "/")))
+;       :at-top #(reset! toc/scroll-location (str "#!/" (:short-title @*book-data*) "/"))
+;       :class "text-justify"
+;       (h1 :class "text-left" (:title @*book-data*))
+;       (h3 (:tagline @*book-data*))
+;       (div kids)))
+;(defn chapter [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [full-data (data/make-data (assoc data :type :ch))]
+;        (part full-data kids)))))
+;(defn sect [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [full-data (data/make-data (assoc data :type :sect))]
+;        (part full-data kids)))))
+;(defn subsect [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [full-data (data/make-data (assoc data :type :sub))]
+;        (part full-data kids)))))
+;(defn ssub [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [full-data (data/make-data (assoc data :type :ssub))]
+;        (part full-data kids)))))
+;(defn exercises [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [full-data (data/make-data (assoc data :type :exs :title "Exercises"))]
+;        (div kids)))))
+;(defn exercise [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [full-data (data/make-data (assoc data :type :ex))]
+;        (part full-data kids)))))
+;(defn fig [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [full-data (data/make-data (assoc data :type :fig))
+;            ch        (get full-data :ch)
+;            fig       (get full-data :fig)
+;            src       (str "/img/"
+;                           (string/lower-case (:url @data/*book-data*))
+;                           "/figure" ch "_" fig ".gif")
+;            footer    (get full-data :footer)]
+;        (div (img :src src 
+;                  :class "img-responsive" 
+;                  :alt (str "Figure " (get data :ch) "." (get data :fig)))
+;             (p (b (str "Figure " ch "." fig ": ")) footer))))))
+;(defn footnote [book-data]
+;  (binding [data/*book-data* book-data]
+;    (fn [data & kids]
+;      (let [hidden    (cell true)
+;            full-data (data/make-data (assoc data :type :ftn))
+;            ftn       (get full-data :ftn)
+;            this-data kids]
+;        (div :style "display:inline;" 
+;             (span :click #(swap! hidden not)
+;                   :style "color:#0000ff"
+;                   (sup (str ftn)))
+;             (div :class (cell= {:hidden hidden
+;                                 :popover true
+;                                 :bottom  true}) 
+;                  (apply (div :class "popover-content"
+;                              :click #(reset! hidden true)) kids)))))))
+;
+;(defelem q-a [_ children]
+;  (let [open        (cell false)
+;        button-text (cell= (str (if open "Hide" "Show") " solution"))]
+;    (div
+;      (button :click #(swap! open not) button-text)
+;      (div{:class "solution" :toggle open}
+;                  children))))
+;
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; For the French quotes thing...
+;;
+;(defmethod md/quoted-node :double-angle [_ kids] (fn [data x] ((footnote data) x kids)))
+;
+
+
+
+(def ^:dynamic *book-data* (cell {})) 
 
 
 (defn make-link
-  ([ch] (str "#!/ch/" ch "/"))
-  ([ch sect] (str "#!/ch/" ch "/sect/" sect "/"))
-  ([ch sect sub] (str "#!/ch/" ch "/sect/" sect "/sub/" sub "/"))
-  ([ch sect sub ssub] (str "#!/ch/" ch "/sect/" sect "/sub/" sub "/ssub/" ssub "/")))
+  ([ch]  (str  "#!/ch/" ch  "/"))
+  ([ch sect]  (str  "#!/ch/" ch  "/sect/" sect  "/"))
+  ([ch sect sub]  (str  "#!/ch/" ch  "/sect/" sect  "/sub/" sub  "/"))
+  ([ch sect sub ssub]  (str  "#!/ch/" ch  "/sect/" sect  "/sub/" sub  "/ssub/" ssub  "/")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,20 +176,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Functions for getting into from *book-data*
 ;
-(defn get-chapters [data]
+(defn get-chapters  [data]
   (:ch data))
-(defn get-sects [data ch]
-  (:sect ((:ch data) ch)))
-(defn get-subsects [data ch sect]
-  (:sub ((:sect ((:ch data) ch)) sect)))
-(defn get-ssubs [data ch sect sub]
-  (:ssub ((:sub ((:sect ((:ch data) ch)) sect)) sub)))
-(defn get-exs [data ch]
-  (:ex ((:ch data) ch)))
-(defn get-figs [data ch]
-  (:fig ((:ch data) ch)))
-(defn get-footnotes [data ch]
-  (:footnote ((:ch data) ch)))
+(defn get-sects  [data ch]
+  (:sect  ((:ch data) ch)))
+(defn get-subsects  [data ch sect]
+  (:sub  ((:sect  ((:ch data) ch)) sect)))
+(defn get-ssubs  [data ch sect sub]
+  (:ssub  ((:sub  ((:sect  ((:ch data) ch)) sect)) sub)))
+(defn get-exs  [data ch]
+  (:ex  ((:ch data) ch)))
+(defn get-figs  [data ch]
+  (:fig  ((:ch data) ch)))
+(defn get-footnotes  [data ch]
+  (:footnote  ((:ch data) ch)))
 
 
 
@@ -46,123 +198,123 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Making the general book part
 ;
-(defelem part [{:keys [size link title]} kids]
-  (div :scroll-to (cell= (= info/route* link)) 
+(defelem part  [{:keys  [size link title]} kids]
+  (div :scroll-to  (cell= (= info/route* link)) 
        :at-top #(reset! toc/scroll-location link)
-       (size :class "text-left" title)
-       (div :class "" kids)))
+       (size :class  "text-left" title)
+       (div :class  "" kids)))
 
 
-(defelem content [attr kids]
-  (apply (div :class "text-justify"
-              :style "padding-left:10%; padding-right:5%;") attr kids))
+(defelem content  [attr kids]
+  (apply  (div :class  "text-justify"
+               :style  "padding-left:10%; padding-right:5%;") attr kids))
 
-(defelem about [{:keys [title tagline]} kids]
-  (div :scroll-to (cell= (= info/route*
-                            (str "#!/" (:short-title *book-data*) "/")))
-       :at-top #(reset! toc/scroll-location (str "#!/" (:short-title @*book-data*) "/"))
-       :class "text-justify"
-       (h1 :class "text-left" (:title @*book-data*))
-       (h3 (:tagline @*book-data*))
+(defelem about  [{:keys  [title tagline]} kids]
+  (div :scroll-to  (cell= (= info/route*
+                             (str  "#!/"  (:short-title *book-data*)  "/")))
+       :at-top #(reset! toc/scroll-location  (str  "#!/"  (:short-title @*book-data*)  "/"))
+       :class  "text-justify"
+       (h1 :class  "text-left"  (:title @*book-data*))
+       (h3  (:tagline @*book-data*))
        (div kids)))
-(defelem chapter [{:keys [title]} kids]
-  (let [ch        (inc (count (get-chapters @*book-data*)))
-        link      (make-link ch)
-        this-data {:ch ch :title title :link link}
-        title     (str ch " " title)]
-    (swap! *book-data* #(assoc-in % [:ch ch] this-data))
+(defelem chapter  [{:keys  [title]} kids]
+  (let  [ch        (inc  (count  (get-chapters @*book-data*)))
+         link      (make-link ch)
+         this-data  {:ch ch :title title :link link}
+         title     (str ch  " " title)]
+    (swap! *book-data* #(assoc-in %  [:ch ch] this-data))
     (part :size h1 :title title :link link kids)))
-(defelem sect [{:keys [title]} kids]
-  (let [ch        (count (get-chapters @*book-data*))
-        sect      (inc (count (get-sects @*book-data* ch)))
-        link      (make-link ch sect)
-        this-data {:ch ch :sect sect :title title :link link}
-        title     (str ch "." sect " " title)]
-    (swap! *book-data* #(assoc-in % [:ch ch :sect sect] this-data))
+(defelem sect  [{:keys  [title]} kids]
+  (let  [ch        (count  (get-chapters @*book-data*))
+         sect      (inc  (count  (get-sects @*book-data* ch)))
+         link      (make-link ch sect)
+         this-data  {:ch ch :sect sect :title title :link link}
+         title     (str ch  "." sect  " " title)]
+    (swap! *book-data* #(assoc-in %  [:ch ch :sect sect] this-data))
     (part :size h2 :title title :link link kids)))
-(defelem subsect [{:keys [title]} kids]
-  (let [ch        (count (get-chapters @*book-data*))
-        sect      (count (get-sects @*book-data* ch))
-        sub       (inc (count (get-subsects @*book-data* ch sect)))
-        link      (make-link ch sect sub)
-        this-data {:ch ch :sect sect :sub sub :title title :link link}
-        title     (str ch "." sect "." sub " " title)]
-    (swap! *book-data* #(assoc-in % [:ch ch :sect sect :sub sub] this-data))
+(defelem subsect  [{:keys  [title]} kids]
+  (let  [ch        (count  (get-chapters @*book-data*))
+         sect      (count  (get-sects @*book-data* ch))
+         sub       (inc  (count  (get-subsects @*book-data* ch sect)))
+         link      (make-link ch sect sub)
+         this-data  {:ch ch :sect sect :sub sub :title title :link link}
+         title     (str ch  "." sect  "." sub  " " title)]
+    (swap! *book-data* #(assoc-in %  [:ch ch :sect sect :sub sub] this-data))
     (part :size h3 :title title :link link kids)))
-(defelem ssub [{:keys [title]} kids]
-  (let [ch        (count (get-chapters @*book-data*))
-        sect      (count (get-sects @*book-data* ch))
-        sub       (count (get-subsects @*book-data* ch sect))
-        ssub      (inc (count (get-ssubs @*book-data* ch sect sub)))
-        link      (make-link ch sect sub ssub)
-        this-data {:ch ch :sect sect :sub sub :ssub ssub :type :ssub :title title :link link}
-        title     title]
-    (swap! *book-data* #(assoc-in % [:ch ch :sect sect :sub sub :ssub ssub] this-data))
+(defelem ssub  [{:keys  [title]} kids]
+  (let  [ch        (count  (get-chapters @*book-data*))
+         sect      (count  (get-sects @*book-data* ch))
+         sub       (count  (get-subsects @*book-data* ch sect))
+         ssub      (inc  (count  (get-ssubs @*book-data* ch sect sub)))
+         link      (make-link ch sect sub ssub)
+         this-data  {:ch ch :sect sect :sub sub :ssub ssub :type :ssub :title title :link link}
+         title     title]
+    (swap! *book-data* #(assoc-in %  [:ch ch :sect sect :sub sub :ssub ssub] this-data))
     (part :size h4 :title title :link link kids)))
 
-(defelem exercises [attr kids]
-  (let [ch        (count (get-chapters @*book-data*))
-        sect      (count (get-sects @*book-data* ch))
-        sub       (count (get-subsects @*book-data* ch sect))
-        ssub      (inc (count (get-ssubs @*book-data* ch sect sub)))
-        link      (make-link ch sect sub ssub)
-        end-exers (count (:ex ((:ch @*book-data*) ch)))
-        first-exs (inc (- end-exers (count (filter #(not (= "" %)) kids))))
-        title     (str "Exercise" (if (= 0 (- end-exers first-exs))
-                                      (str " ")
-                                      (str "s " first-exs "-")) end-exers)
-        this-data {:type "exercises" :title title :link link}]
-    (swap! *book-data* #(assoc-in % [:ch ch :sect sect :sub sub :ssub ssub] this-data))
-    (part :size h3 :title "" :link link kids)))
+(defelem exercises  [attr kids]
+  (let  [ch        (count  (get-chapters @*book-data*))
+         sect      (count  (get-sects @*book-data* ch))
+         sub       (count  (get-subsects @*book-data* ch sect))
+         ssub      (inc  (count  (get-ssubs @*book-data* ch sect sub)))
+         link      (make-link ch sect sub ssub)
+         end-exers  (count  (:ex  ((:ch @*book-data*) ch)))
+         first-exs  (inc  (- end-exers  (count  (filter #(not  (= "" %)) kids))))
+         title     (str  "Exercise"  (if  (= 0  (- end-exers first-exs))
+                                       (str  " ")
+                                       (str  "s " first-exs  "-")) end-exers)
+         this-data  {:type  "exercises" :title title :link link}]
+    (swap! *book-data* #(assoc-in %  [:ch ch :sect sect :sub sub :ssub ssub] this-data))
+    (part :size h3 :title  "" :link link kids)))
 
-(defelem exercise [attr kids]
-  (let [ch        (count (get-chapters @*book-data*))
-        ex        (inc (count (get-exs @*book-data* ch)))
-        this-data {:type "exercise" :link (str "#!/sicp/ch/1/ex/" ex)}] 
-    (swap! *book-data* #(assoc-in % [:ch ch :ex ex] this-data))
-    (div :type "exercise" :class "exercise" (h3 (str "Exercise " ch "." ex)) kids)))
+(defelem exercise  [attr kids]
+  (let  [ch        (count  (get-chapters @*book-data*))
+         ex        (inc  (count  (get-exs @*book-data* ch)))
+         this-data  {:type  "exercise" :link  (str  "#!/sicp/ch/1/ex/" ex)}] 
+    (swap! *book-data* #(assoc-in %  [:ch ch :ex ex] this-data))
+    (div :type  "exercise" :class  "exercise"  (h3  (str  "Exercise " ch  "." ex)) kids)))
 
-(defelem q-a [_ children]
-  (let [open        (cell false)
-        button-text (cell= (str (if open "Hide" "Show") " solution"))]
+(defelem q-a  [_ children]
+  (let  [open        (cell false)
+         button-text  (cell= (str  (if open  "Hide"  "Show")  " solution"))]
     (div
       (button :click #(swap! open not) button-text)
-      (div{:class "solution" :toggle open}
-                  children))))
-(defelem fig [{:keys [footer]} _]
-  (let [ch  (count (get-chapters @*book-data*))
-        figr (inc (count (get-figs @*book-data* ch)))
-        link (str "#!/" 
-                  (string/lower-case (:short-title @*book-data*)) "/ch/" ch "/fig/" figr "/")
-        src  (str "/img/" (string/lower-case (:short-title @*book-data*)) "/figure" ch "_" figr ".gif")
-        this-data {:footer footer :src src :link link}]
-    (swap! *book-data* #(assoc-in % [:ch ch :fig figr] this-data))
-    (div (img :src src :class "img-responsive" :alt "Figure 1.3")
-         (p (b (str "Figure " ch "." figr ": ")) footer))))
-(defelem image [attr kids]
-  (apply (img :class "img-responsive"
-              :src (str "/" (:src attr))) kids))
+      (div {:class  "solution" :toggle open}
+           children))))
+(defelem fig  [{:keys  [footer]} _]
+  (let  [ch  (count  (get-chapters @*book-data*))
+         figr  (inc  (count  (get-figs @*book-data* ch)))
+         link  (str  "#!/" 
+                    (string/lower-case  (:short-title @*book-data*))  "/ch/" ch  "/fig/" figr  "/")
+         src  (str  "/img/"  (string/lower-case  (:short-title @*book-data*))  "/figure" ch  "_" figr  ".gif")
+         this-data  {:footer footer :src src :link link}]
+    (swap! *book-data* #(assoc-in %  [:ch ch :fig figr] this-data))
+    (div  (img :src src :class  "img-responsive" :alt  "Figure 1.3")
+         (p  (b  (str  "Figure " ch  "." figr  ": ")) footer))))
+(defelem image  [attr kids]
+  (apply  (img :class  "img-responsive"
+                               :src  (str  "/"  (:src attr))) kids))
 
-(defelem footnote [attr kids]
-  (let [hidden    (cell true)
-        ch        (count (get-chapters @*book-data*))
-        ftn       (inc (count (:footnote @*book-data*)))
-        this-data kids]
-    (swap! *book-data* #(assoc-in % [:footnote ftn] this-data))
-    (div :style "display:inline;" 
+(defelem footnote  [attr kids]
+  (let  [hidden    (cell true)
+         ch        (count  (get-chapters @*book-data*))
+         ftn       (inc  (count  (:footnote @*book-data*)))
+         this-data kids]
+    (swap! *book-data* #(assoc-in %  [:footnote ftn] this-data))
+    (div :style  "display:inline;" 
          (span :click #(swap! hidden not)
-               :style "color:#0000ff"
-               (sup (str ftn)))
-         (div :class (cell= {:hidden hidden
-                             :popover true
-                             :bottom  true}) 
-              (apply (div :class "popover-content"
-                          :click #(reset! hidden true)) attr kids)))))
+               :style  "color:#0000ff"
+               (sup  (str ftn)))
+         (div :class  (cell= {:hidden hidden
+                              :popover true
+                              :bottom  true}) 
+              (apply  (div :class  "popover-content"
+                           :click #(reset! hidden true)) attr kids)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; For the French quotes thing...
 ;
-(defmethod md/quoted-node :double-angle [_ kids] (footnote kids))
+(defmethod md/quoted-node :double-angle  [_ kids]  (footnote kids))
 

@@ -2,15 +2,15 @@
                            [adzerk/boot-reload        "0.3.1"]
                            [org.clojure/clojurescript "1.7.48"]
                            [org.clojure/clojure       "1.7.0"]
-                           [tailrecursion/boot-hoplon "0.1.4"]
-                           [tailrecursion/hoplon      "6.0.0-alpha7"]]
+                           #_[tailrecursion/boot-hoplon "0.1.0"]
+                           [tailrecursion/hoplon      "6.0.0-alpha2"]]
           :source-paths #{"src"}
           :resource-paths #{"assets"})
 
 (require
   '[adzerk.boot-cljs          :refer [cljs]]
   '[adzerk.boot-reload        :refer [reload]]
-  '[tailrecursion.boot-hoplon :refer [hoplon prerender haml]])
+  #_'[tailrecursion.boot-hoplon :refer [hoplon prerender haml]])
 
 (deftask after-checkout
   [s sym SYM sym   "The sym"
@@ -24,23 +24,24 @@
   "Build hoplon-minimal for local development."
   []
   (comp
-    (watch)
+    #_(watch)
     (speak)
-    #_(after-checkout :sym 'tailrecursion.boot-hoplon/haml)
-    #_(after-checkout :sym 'tailrecursion.boot-hoplon/hoplon)
-    (haml)
-    (hoplon)
+    (after-checkout :sym 'tailrecursion.boot-hoplon/haml)
+    (after-checkout :sym 'tailrecursion.boot-hoplon/hoplon)
+    #_(haml)
+    #_(hoplon)
     (reload)
-    (cljs)))
+    (cljs)
+    ))
 
 (deftask prod
   "Build hoplon-minimal for production deployment."
   []
   (comp
-    #_(after-checkout :sym 'tailrecursion.boot-hoplon/haml)
-    #_(after-checkout :sym 'tailrecursion.boot-hoplon/hoplon)
-    (haml)
-    (hoplon)
+    (after-checkout :sym 'tailrecursion.boot-hoplon/haml)
+    (after-checkout :sym 'tailrecursion.boot-hoplon/hoplon)
+    #_(haml)
+    #_(hoplon)
     (cljs :optimizations :advanced)
-    (prerender)
+    #_(prerender)
     #_(after-checkout :sym 'tailrecursion.boot-hoplon/prerender)))

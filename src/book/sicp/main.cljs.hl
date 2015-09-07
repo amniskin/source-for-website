@@ -13,6 +13,7 @@
             [book.sicp.texts.ch2      :as ch2]
             [book.sicp.texts.ch2sect1 :as ch2sect1]
             [book.sicp.texts.ch2sect2 :as ch2sect2]
+            [book.sicp.texts.ch2sect3 :as ch2sect3]
             ))
 
 (html
@@ -37,5 +38,6 @@
           (ch2/content)
           (ch2sect1/content)
           (ch2sect2/content)
+          (ch2sect3/content)
           (footer/content)
           )))))
