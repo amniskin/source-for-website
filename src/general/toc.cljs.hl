@@ -16,7 +16,6 @@
                        (into {})))
 
 (defc hover-cell nil)
-(pr :toc hover-cell)
 
 (defelem toc-link [{:keys [link title]} _]
   (let [scroll-link? (cell= (= scroll-location link))
