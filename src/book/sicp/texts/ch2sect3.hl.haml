@@ -1,0 +1,1224 @@
+%clj
+  (ns book.sicp.texts.ch2sect3
+    (:require-macros [tailrecursion.hoplon.markdown :refer [md]])
+    (:require        [tailrecursion.hoplon.markdown :as md]
+                     [book.sicp.book-data           :as data]))
+
+%sexp
+  defelem content [_ _]
+  %div
+    %data.sect{:title "Symbolic Data"}
+      %md
+        All the compound data objects we have used so far were constructed
+        ultimately from numbers. In this section we extend the representational
+        capability of our language by introducing the ability to work with
+        arbitrary symbols as data.
+
+    %data.subsect{:title "Quotation"}
+      %md
+        If we can form compound data using symbols, we can have lists such as
+
+        ```clj
+        (a b c d)
+        (12 45 17)
+        ((Norah 12) (Molly 9) (Anna 7) (Lauren 6) (Charlotte 4))
+        ```
+
+        Lists containing symbols can look just like the exressions of our language:
+
+        ```clj
+        (* (+ 23 45) (+ x 9))
+        (defn fact [n] (if (= n 1) 1 (* n (fact (- n 1)))))
+        ```
+
+        In order to manipulate symbols we need a new element in our language:
+        the ability to *quote* a data object. Suppose we want to construct the
+        list `(a b)`. We can't accomplish this with `(list a b)`, because this
+        expression constructs a list of the *values* of `a` and `b` rather than
+        the symbols themselves. This issue is well known in the context of
+        natural languages, where words and sentences may be regarded either as
+        semantic entities or as character strings (syntactic entities). The
+        common practice in natural languages is to use quotation marks to
+        indicate that a word or a sentence is to be treated literally as a
+        string of characters. For instance, the first letter of "John" is
+        clearly a "J." If we tell somebody, "say your name aloud," we expect to
+        hear that person's name. However, if we tell somebody "say \'your
+        name\' aloud," we expect to hear the words "your name." Note that we
+        are forced to nest quotation marks to describe what somebody else might
+        say.<<Allowing quotation in a language wreaks havoc with the ability to
+        reason about the language in simple terms, because it destroys the
+        notion that equals can be substituted for equals. For example, three is
+        one plus two, but the word "three" is not the phrase "one plus two."
+        Quotation is powerful because it gives us a way to build expressions
+        that manipulate other expressions (as we will see when we write an
+        interpreter in chapter 4). But allowing statements in a language that
+        talk about other statements in that language makes it very difficult to
+        maintain any coherent principle of what "equals can be substituted for
+        equals" should mean. For example, if we know that the evening star is
+        the morning star, then from the statement "the evening star is Venus"
+        we can deduce "the morning star is Venus." However, given that "John
+        knows that the evening star is Venus" we cannot infer that "John knows
+        that the morning star is Venus.">>
+
+
+        w this same practice to identify lists and symbols that are to be
+        treated as data objects rather than as expressions to be evaluated.
+        However, our format for quoting differs from that of natural languages
+        in that we place a quotation mark (traditionally, the single quote
+        symbol ') only at the beginning of the object to be quoted. We can get
+        away with this in Scheme syntax because we rely on blanks and
+        parentheses to delimit objects. Thus, the meaning of the single quote
+        character is to quote the next object.<<The single quote is different
+        from the double quote we have been using to enclose character strings
+        to be printed. Whereas the single quote can be used to denote lists or
+        symbols, the double quote is used only with character strings. In this
+        book, the only use for character strings is as items to be printed.>>
+
+        Now we can distinguish between simbols and their values:
+
+        ```clj
+        (def a 1)
+
+        (def b 2)
+
+        (list a b)
+        =>(1 2)
+
+        (list 'a 'b)
+        =>(a b)
+
+        (list 'a b)
+        =>(a 2)
+        ```
+
+        Quotation also allows us to type in compound objects, using the
+        conventional printed representation for lists:<<Strictly, our use of
+        the quotation mark violates the general rule that all compound
+        expressions in our language should be delimited by parentheses and look
+        like lists. We can recover this consistency by introducing a special
+        form quote, which serves the same purpose as the quotation mark. Thus,
+        we would type `(quote a)` instead of `'a`, and we would type `(quote (a
+        b c))` instead of `'(a b c)`. This is precisely how the interpreter
+        works.  The quotation mark is just a single-character abbreviation for
+        wrapping the next complete expression with quote to form `(quote
+        <expression>)`.  This is important because it maintains the principle
+        that any expression seen by the interpreter can be manipulated as a
+        data object.  For instance, we could construct the expression `(first '(a
+        b c))`, which is the same as `(first (quote (a b c)))`, by evaluating
+        `(list 'first (list 'quote '(a b c)))`.>>
+
+        ```clj
+        (first '(a b c))
+        => a
+
+        (rest '(a b c))
+        => (b c)
+        ```
+
+        In keeping with this, we can obtain the empty list by evaluating `'()`.
+
+        To test whether two symbols are the same, we can use Clojure's `=`
+        primative. In Scheme, due to the lack of the protocol abstraction, this
+        primative had to be a new primative (one which they called `eq?`).<< We
+        can consider two symbols to be "the same" if they consist of the same
+        characters in the same order. Such a definition skirts a deep issue
+        that we are not yet ready to address: the meaning of "sameness" in a
+        programming language. We will return to this in chapter 3 (section
+        3.1.3).>> Using `=`, we can implement a useful procedure called `memq`.
+        This takes two arguments, a symbol and a list. If the symbol is not
+        contained in the list (i.e., is not `=` to any item in the list), then
+        `memq` returns false. Otherwise it returns the sublist of the list
+        beginning with the first occurrence of the symbol:
+
+        ```clj
+        (defn memq [item x]
+          (loop [things x]
+            (cond (empty? x) false
+                  (= item (first x)) x
+                  :else (recur (rest x)))))
+        ```
+
+        For example,
+
+        ```clj
+        (memq 'apple '(pear banana prune))
+        => false
+
+        (memq 'apple '(x (apple sauce) y apple pear))
+        => (apple pear)
+        ```
+
+    %data.exercises
+      %data.exercise
+        %md
+          What would the interpreter print in response to evaluating each of the following expressions?
+
+          ```clj
+          (list 'a 'b 'c)
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (list 'a 'b 'c)
+            => (a b c)
+            ```
+        
+        %md
+          ```clj
+          (list (list 'george))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (list (list 'george))
+            => ((george))
+            ```
+        
+        %md
+          ```clj
+          (second '((x1 x2) (y1 y2)))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (second '((x1 x2) (y1 y2)))
+            => (y1 y2)
+            ```
+        
+        %md
+          ```clj
+          (list? (first '(a short list)))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (list? (first '(a short list)))
+            => false
+            ```
+        
+        %md
+          ```clj
+          (memq 'red '((red shoes) (blue socks)))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (memq 'red '((red shoes) (blue socks)))
+            => false
+            ```
+        
+        %md
+          ```clj
+          (memq 'red '(red shoes blue socks))
+          ```
+
+        %data.q-a
+          %md
+            ```clj
+            (memq 'red '(red shoes blue socks))
+            => (red shoes blue socks)
+            ```
+
+      %data.exercise
+        %md
+          Two lists are said to be equal (again we will make use of the diverse
+          protocols included in Clojure's `=` procedure), if they contain equal
+          elements arranged in the same order. For example,
+
+          ```clj
+          (= '(this is a list) '(this is a list))
+          => true
+
+          (= '(this is a list) '(this (is a) list))
+          => false
+          ```
+          
+          To be more precise, we can define the protocols for `=` recursively
+          in terms of the basic `=` protocols we're used to. To do this (for
+          purposes of instruction) we will need to define a new procedure `eq?`
+          that will take two arguments and return true if they are not lists
+          and they are `=` in the traditional sense. From that, we can define
+          our new protocol for `=`, which we will call `more-general-eq?` by
+          saying that `a` and `b` are `more-general-eq?` ifthey are both
+          symbols and `(= a b)`, or if they are both lists such that `(first
+          a)` is `more-general-eq?` to `(first b)` and `(rest a)` is
+          `more-general-eq?` to `(rest b)`. Using this idea, implement `eq?`
+          and `more-general-eq?` as procedures.<<In practice, programmers use
+          `equal?` to compare lists that contain numbers as well as symbols.
+          Numbers are not considered to be symbols. The question of whether two
+          numerically equal numbers (as tested by `=`) are also `eq?` is highly
+          implementation-dependent. A better definition of `equal?` (such as
+          the one that comes as a primitive in Scheme) would also stipulate
+          that if a and b are both numbers, then a and b are equal? if they are
+          numerically equal. I believe Clojure gets around this issue through
+          the use of protocols (something we will go over later). Basically,
+          protocols allow for the use of functions accross many different types
+          of arguments. For instance, `first` can be used with a vector, a
+          list, and more generally, any sequential object. In fact, you could
+          write your own protocols for `first` so that you could use `first` on
+          your own data structures. We&#39;ve actually been using protocols for
+          a while now via `conj`. When given a vector, `conj` appends the
+          argument to the end of the vector; when given a list, `conj`
+          prepends. This is due to protocols.>>
+
+        %data.q-a
+          %md
+            ```clj
+            (defn eq? [a b]
+              (and (= a b)
+                   (not (seq? a))))
+
+            (defn more-general-eq? [a b]
+              (cond 
+                (eq? a b) true
+                (empty? a) (empty? b)
+                (and (list? a) 
+                     (list? b))
+                (and (more-general-eq? (first a) (first b))
+                     (more-general-eq? (rest a) (rest b)))
+                :else false)
+            ```
+
+            The idea being if `a` and `b` are equal (in this sense) then both
+            `a` and `b` must be either: non-empty lists, empty lists, or not
+            lists at all. This function takes care of those three cases in
+            reverse order and if none are the case, it returns false.
+
+      %data.exercise
+        %md
+          Eva Lu Ator types to the interpreter the expression
+
+          ```clj
+          (first ''abracadabra)
+          ```
+
+          To her surprise, the interpreter prints back `quote`. Explain.
+
+        %data.q-a
+          %md
+            First let's take a look at what `''abracadabra` returns.
+
+            ```clj
+            ''abracadabra
+            `(quote abracadabra)
+            (quote (quote abracadabra))
+            => (quote abracadabra)
+            ```
+
+            So, we see the first thing in this list is the word "quote".
+
+    %data.subsect{:title "Example: Symbolic Differentiation"}
+      %md
+        As an illustration of symbol manipulation and a further illustration of
+        data abstraction, consider the design of a procedure that performs
+        symbolic differentiation of algebraic expressions. We would like the
+        procedure to take as arguments an algebraic expression and a variable
+        and to return the derivative of the expression with respect to the
+        variable. For example, if the arguments to the procedure are \\(ax2 +
+        bx + c\\) and \\(x\\), the procedure should return \\(2ax + b\\).
+        Symbolic differentiation is of special historical significance in Lisp.
+        It was one of the motivating examples behind the development of a
+        computer language for symbol manipulation. Furthermore, it marked the
+        beginning of the line of research that led to the development of
+        powerful systems for symbolic mathematical work, which are currently
+        being used by a growing number of applied mathematicians and
+        physicists.
+
+        In developing the symbolic-differentiation program, we will follow the
+        same strategy of data abstraction that we followed in developing the
+        rational-number system of section 2.1.1. That is, we will first define
+        a differentiation algorithm that operates on abstract objects such as
+        "sums," "products," and "variables" without worrying about how these
+        are to be represented. Only afterward will we address the
+        representation problem.
+
+    %data.ssub{:title "The Differentiation Program with Abstract Data"}
+      %md
+        In order to keep things simple, we will consider a very simple
+        symbolic-differentiation program that handles expressions that are
+        built up using only the operations of addition and multiplication with
+        two arguments. Differentiation of any such expression can be carried
+        out by applying the following reduction rules:
+
+        $$\begin{align*}
+        \frac{dc}{dx}=& 0 \text{for } c \text{ a constant or a variable different from } x\\\\
+        \frac{dx}{dx}=& 1\\\\
+        \frac{d(u+v)}{dx}=& \frac{du}{dx}+\frac{dv}{dx}\\\\
+        \frac{d(uv)}{dx}=& u\left(\frac{du}{dx}\right) + v\left(\frac{dv}{dx}\right)\\\\
+        \end{align*}$$
+
+        Observe that the latter two rules are recursive in nature. That is, to
+        obtain the derivative of a sum we first find the derivatives of the
+        terms and add them. Each of the terms may in turn be an expression that
+        needs to be decomposed. Decomposing into smaller and smaller pieces
+        will eventually produce pieces that are either constants or variables,
+        whose derivatives will be either 0 or 1.
+
+        To embody these rules in a procedure we indulge in a little wishful
+        thinking, as we did in designing the rational-number implementation. If
+        we had a means for representing algebraic expressions, we should be
+        able to tell whether an expression is a sum, a product, a constant, or
+        a variable. We should be able to extract the parts of an expression.
+        For a sum, for example we want to be able to extract the addend (first
+        term) and the augend (second term). We should also be able to construct
+        expressions from parts. Let us assume that we already have procedures
+        to implement the following selectors, constructors, and predicates:
+
+      %table{:class "table"}
+        %tbody
+          %tr
+            %td
+              %md
+                `(variable? e)`
+            %td
+              %md
+                Is `e` a variable?
+  
+          %tr
+            %td
+              %md
+                `(same-variable? v1 v2)`
+            %td
+              %md
+                Are `v1` and `v2` the same variable?
+  
+          %tr
+            %td
+              %md
+                `(sum? e)`
+            %td
+              %md
+                Is `e` a sum?
+  
+          %tr
+            %td
+              %md
+                `(addend e)`
+            %td
+              %md
+                Addend of the sum `e`.
+  
+          %tr
+            %td
+              %md
+                `(augend e)`
+            %td
+              %md
+                Augend of the sum `e`.
+  
+          %tr
+            %td
+              %md
+                `(make-sum e)`
+            %td
+              %md
+                Construct the sum of `a1` and `a2`.
+  
+          %tr
+            %td
+              %md
+                `(product? e)`
+            %td
+              %md
+                Is `e` a product?
+  
+          %tr
+            %td
+              %md
+                `(multiplier e)`
+            %td
+              %md
+                Multiplier of the product `e`.
+  
+          %tr
+            %td
+              %md
+                `(multiplicand e)`
+            %td
+              %md
+                Multiplicand of the product `e`.
+  
+          %tr
+            %td
+              %md
+                `(make-product m1 m2)`
+            %td
+              %md
+                Construct the product of `m1` and `m2`.
+
+      %md
+        Using these, and the primitive predicate `number?`, which identifies
+        numbers, we can express the differentiation rules as the following
+        procedure:
+
+        ```clj
+        (defn deriv [exp var]
+          (cond (number? exp) 0
+                (variable? exp) (if (same-variable? exp var) 
+                                    1 
+                                    0)
+                (sum? exp) (make-sum
+                             (deriv (addend exp) var)
+                             (deriv (augend exp) var))
+                (product? exp) (make-sum
+                                 (make-product (multiplier exp)
+                                               (deriv (multiplicand exp) var))
+                                 (make-product (multiplicand exp)
+                                               (deriv (multiplier exp) var)))
+                :else (throw (Exception. "Unknown expression type -- DERIV"))))
+        ```
+
+        This `deriv` procedure inforporates the complete differentiation
+        algorithm. Since it is expressed in terms of abstract data, it will
+        work no matter how we choose to represent algebraic expressions, as
+        long as we design a proper set of selectors and constructors. This is
+        the issue we must address next.
+
+    %data.ssub{:title "Representing Algebraic Expressions"}
+      %md
+        We can imagine ways to use list structure to represent algebraic
+        expressions. For example, we could use lists of symbols that mirror the
+        usual algebraic notation, representing \\(ax+b\\) as the list `(a * x +
+        b)`. However, one especially straightforward choice is to use the same
+        parenthesized prefix notation that Lisp uses for combinations: that is,
+        to represent \\(ax+b\\) as `(+ (* a x) b)`. Then our data
+        representation for the differentiation problem is as follows:
+
+        - The variables are symbols. They are identified by the primitive predicate `symbol?`: 
+          ```clj
+          (defn variable? [x]
+            (symbol? x))
+          ```
+
+        ` Two variables are the same if the symbols representing them are `=`.
+          ```clj
+          (defn same-variable? [v1 v2]
+            (and (variable? v1)
+                 (variable? v2)
+                 (= v1 v2)))
+          ```
+
+        - Sums and products are constructed as lists:
+          ```clj
+          (defn make-sum [a1 a2]
+            (list '+ a1 a2))
+
+          (defn make-product [m1 m2]
+            (list '* m1 m2))
+          ```
+
+        - A sum is a list whose first element is the symbol `+`:
+          ```clj
+          (defn sum? [x]
+            (and (seq? x)
+                 (= (first x) '+)))
+          ```
+
+        - The addend is the second term of the sum list:
+          ```clj
+          (defn addend [s]
+            (second s))
+          ```
+
+        - The augend is the third term of the sum list:
+          ```clj
+          (defn augend [s]
+            (nth s 2))
+          ```
+
+        - A product is a list whose first element is the symbol `*`:
+          ```clj
+          (defn product? [x]
+            (and (seq? x)
+                 (= (first x) '*)))
+          ```
+
+        - The multiplier is the second item of the product list:
+          ```clj
+          (defn multiplier [p]
+            (second p))
+          ```
+
+        - The multiplicand is the third item of the product list:
+          ```clj
+          (defn multiplicand [p]
+            (nth p 2))
+          ```
+
+        Thus, we need only combine these with the algorithm as embodied by
+        `deriv` in order to have a working symbolic differentiation program.
+        Let us look at some examples of its behavior:
+
+        ```clj
+        (deriv '(+ x 3) 'x)
+        => (+ 1 0)
+
+        (deriv '(* x y) 'x)
+        => (+ (* x 0) (* 1 y))
+
+        (deriv '(* (* x y) (+ x 3)) 'x)
+        => (+ (* (* x y) (+ 1 0))
+              (* (+ (* x 0) (* 1 y))
+                 (+ x 3)))
+        ```
+
+        The program produces answers that are correct; however, they are
+        unsimplified. It is true that
+
+        $$\frac{d(xy)}{dx}=x*0+1*y$$
+
+        but we would like the program to know that \\(x\cdot0=0\\), \\(1\cdot
+        y=y\\), and \\(0+y=y\\). The answer for the second example should have
+        been simply, \\(y\\). As the third example shows, this becomes a
+        serious issue when the expressions are complex.
+
+        Our difficulty is much like the one we encountered with the
+        rational-number implementation: we haven't reduced answers to simplest
+        form. To accomplish the rational-number reduction, we needed to change
+        only the constructors and the selectors of the implementation. We can
+        adopt a similar strategy here. We won't change `deriv` at all.
+        Instead, we will change `make-sum` so that if both summands are
+        numbers, `make-sum` will add them and return their sum. Also, if one of
+        the summands is 0, then `make-sum` will return the other summand.
+
+        ```clj
+        (defn make-sum [a1 a2]
+          (cond (= a1 0) a2
+                (= a2 0) a1
+                (and (number? a1)
+                     (number? a2)) (+ a1 a2)
+                :else (list '+ a1 a2)))
+        ```
+
+        This uses the procedure `=`, which, returns `true` if and only if the
+        two arguments are of the same type and value. Since `0` is a number,
+        `(= a1 0)` implies that `a1` must be a number as well. In the original
+        SICP, they used a function `=number?` to accomplish this task. We do
+        not need this in Clojure.
+
+        Similarly, we will change `make-product` to build in the rules that 0
+        times anything is 0 and 1 times anything is the thing itself:
+
+        ```clj
+        (defn make-product [m1 m2]
+          (cond (or (= m1 0)
+                    (= m2 0)) 0
+                (= m1 1) m2
+                (= m2 1) m1
+                (and (number? m1)
+                     (number? m2)) (* m1 m2)
+                :else (list '* m1 m2)))
+        ```
+
+        Here is how this version works on our three examples:
+
+        ```clj
+        (deriv '(+ x 3) 'x)
+        => 1
+
+        (deriv '(* x y) 'x)
+        => y
+
+        (deriv '(* (* x y) (+ x 3)) 'x)
+        => (+ (* x y) (* y (+ x 3)))
+        ```
+
+        Although this is quite an improvement, the third example shows that
+        there is still a long way to go before we get a program that puts
+        expressions into a form that we might agree is "simplest." The problem
+        of algebraic simplification is complex because, among other reasons, a
+        form that may be simplest for one purpose may not be for another.
+
+    %data.exercises
+      %data.exercise
+        %md
+          Show how to extend the basic differentiator to handle more kinds of
+          expressions. For instance, implement the differentiation rule
+
+          $$\frac{d(u^n)}{dx}=nu^{n-1}\left(\frac{du}{dx}\right)$$
+
+          by adding a new clause to the `deriv` program and defining
+          appropriate procedures `exponentiation?`, `base`, `exponent` and
+          `make-exponentiation`. (You may use the symbol `**` to denote
+          exponentiation.) Build in the rules that anything raised to the power
+          0 is 1, and anything raised to the power 1 is the thing itself.
+
+        %data.q-a
+          %md
+            We must add the following clause to the definition of `(deriv exp
+            var)`, where `exp` refers to the expression, and `var` refers to
+            the variable with which we are differentiating.
+
+            ```clj
+            (exponentiation? exp)
+            (make-product 
+              (make-product 
+                (exponent exp)
+                (make-exponentiation 
+                  (base exp) 
+                  (exponent (- exp 1))))
+              (deriv (base exp) var))
+            ```
+
+            ```clj
+            (defn exponentiation? [exp]
+              (= (first exp) '**))
+
+            (defn make-exponentiation [base exponent]
+              (list '** base exponent))
+
+            (defn base [exp]
+              (second exp))
+
+            (defn exponent [exp]
+              (nth exp 2))
+            ```
+
+            But then we realize that we would like to include the
+            simplification rules, so
+
+            ```clj
+            (defn make-exponentiation [base exponent]
+              (cond (and (number? base)
+                         (number? exponent)) (exp base exponent)
+                    (= exponent 0) 1
+                    (= exponent 1) base
+                    :else (list '** base exponent)))
+            ```
+
+      %data.exercise
+        %md
+          Extend the differentiation program to handle sums and products of
+          arbitrary numbers of (two or more) terms. Then the last example above
+          could be expressed as
+
+          ```clj
+          (deriv '(* x y (+ x 3)) 'x)
+          ```
+
+          Try to do this by changing only the representation for sums and
+          products without changing the deriv procedure at all. For example,
+          the `addend` of a sum would be the first term, and the `augend` would
+          be the sum of the rest of the terms.
+
+          To do this, it is best to take advantage of our ability to define
+          functions with mutliple arities.
+
+          ```clj
+          (defn doit
+            ([x y] (+ x y))
+            ([x y z] (* x y z)))
+          ```
+
+          This function will add its arguments if given two arguments, and
+          multiply them if given three.
+
+          ```clj
+          (defn doit [x y & z]
+            (* x y (reduce + z)))
+          ```
+          
+          This function will add up all arguments after the first two (if there
+          are none, it will return 0 for this part). It then returns the
+          product of that sum and the first two arguments. Play around with
+          this structure for a while to give yourself some familiarity before
+          solving this problem.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn sum [exp]
+              (= (first exp) '+))
+
+            (defn addend [exp]
+              (second exp))
+
+            (defn augend [exp]
+              (drop 2 exp))
+
+            (defn make-sum
+              ([x y] (cond (= x 0) y
+                           (= y 0) x
+                           (and (number? x)
+                                (number? y)) (+ x y)
+                           :else (list '+ x y)))
+              ([x y & z] (if (empty? z)
+                             (make-sum x y)
+                             (make-sum x
+                                       (make-sum y 
+                                                 (first z) 
+                                                 & (rest z))))))
+            ```
+
+            The product version is analogous.
+
+      %data.exercise
+        %md
+          Suppose we want to modify the differentiation program so that it
+          works with ordinary mathematical notation, in which `+` and `*` are
+          infix rather than prefix operators. Since the differentiation program
+          is defined in terms of abstract data, we can modify it to work with
+          different representations of expressions solely by changing the
+          predicates, selectors, and constructors that define the
+          representation of the algebraic expressions on which the
+          differentiator is to operate.
+
+          a. Show how to do this in order to differentiate algebraic
+          expressions presented in infix form, such as `(x + (3 * (x + (y +
+          2))))`. To simplify the task, assume that `+` and `*` always take two
+          arguments and that expressions are fully parenthesized.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn make-sum [x y]
+              (cond (= x 0) y
+                    (= y 0) x
+                    (and (number? x)
+                         (number? y)) (+ x y)
+                    :else (list x '+ y)))
+
+            (defn addend [exp]
+              (first exp))
+
+            (defn augend [exp]
+              (nth exp 2))
+
+            (defn sum? [exp]
+              (= (second exp) '+))
+            ```
+
+            The one for product is analogous.
+
+        %md
+          b. The problem becomes substantially harder if we allow standard
+          algebraic notation, such as `(x + 3 * (x + y + 2))`, which drops
+          unnecessary parentheses and assumes that multiplication is done
+          before addition. Can you design appropriate predicates, selectors,
+          and constructors for this notation such that our derivative program
+          still works?
+
+        %data.q-a
+          %md
+            This is exactly why 1) prefix notation is so awesome, and 2)
+            macros. But let's try this out without beautiful, beautiful macros.
+            This solution is not a partifularly pretty one, but I'm doing this
+            one after a VERY long day, so...
+
+            ```clj
+            (defn exponents [expression]
+              (loop [accu (list )
+                     left expression]
+                (cond (empty? left) accu
+                      (= (second left) '**) (recur accu 
+                                                   (conj (drop 3 left)
+                                                         (make-exponentiation (first left)
+                                                                              (nth left 2))))
+                      :else (recur (conj accu (take 2 left))
+                                   (drop 2 left)))))
+
+            (defn multiplication [expression]
+              (loop [accu (list )
+                     left expression]
+                (cond (empty? left) accu
+                      (= (second left) '*) (recur accu
+                                                  (conj (drop 3 left)
+                                                        (make-product (first left)
+                                                                      (nth left 2))))
+                      :else (recur (conj accu (take 2 left))
+                                   (drop 2 left)))))
+
+            (defn addition [expression]
+              (loop [accu (list )
+                     left expression]
+                (cond (empty? left) accu
+                      (= (second left) '+) (recur accu
+                                                  (conj (drop 3 left)
+                                                        (make-sum (first left)
+                                                                  (nth left 2))))
+                      :else (recur (conj accu (take 2 left))
+                                   (drop 2 left)))))
+
+            (defn pemdas [expression]
+              (if (seq? expression) (->> (map pemdas expression)
+                                         (exponents)
+                                         (multiplication)
+                                         (addition))
+                  expression))
+            ```
+
+            After this, our expression should be in prefix notation with only
+            two arguments for each operation, so we can use procedures supplied
+            in the book. If you are unclear about what I did here (with `->>`)
+            look up Clojure's "threading macro" or shoot me an email and I'll
+            be happy to clarify things. Again, I would appreciate hearing
+            exactly what is unclear so that I can make this site as clear as
+            possible for future readers. So don't be shy! Email me! (My email
+            address is in the footer).
+
+    %data.subsect{:title "Example: Representing Sets"}
+      %md
+        In the previous examples we built representations for two kinds of
+        compound data objects: rational numbers and algebraic expressions. In
+        one of these examples we had the choice of simplifying (reducing) the
+        expressions at either construction time or selection time, but other
+        than that the choice of a representation for these structures in terms
+        of lists was straightforward. When we turn to the representation of
+        sets, the choice of a representation is not so obvious. Indeed, there
+        are a number of possible representations, and they differ significantly
+        from one another in several ways.
+
+        Informally, a set is simply a collection of distinct objects. To give a
+        more precise definition we can employ the method of data abstraction.
+        That is, we define "set" by specifying the operations that are to be
+        used on sets. These are `union-set`, `intersection-set`,
+        `element-of-set?`, and `adjoin-set`. `Element-of-set?` is a predicate
+        that determines whether a given element is a member of a set.
+        `Adjoin-set` takes an object and a set as arguments and returns a set
+        that contains the elements of the original set and also the adjoined
+        element. `Union-set` computes the union of two sets, which is the set
+        containing each element that appears in either argument.
+        `Intersection-set` computes the intersection of two sets, which is the
+        set containing only elements that appear in both arguments. From the
+        viewpoint of data abstraction, we are free to design any representation
+        that implements these operations in a way consistent with the
+        interpretations given above.
+
+    %data.ssub{:title "Sets as Unordered Lists"}
+      %md
+        One way to represent a set is as a list of its elements in which no
+        element appears more than once. The empty set is represented by the
+        empty list. In this representation, `element-of-set?` is similar to the
+        procedure `memq` of section 2.3.1.
+
+        ```clj
+        (defn element-of-set? [x set]
+          (loop [things set]
+            (cond (empty? things) false
+                  (= x (first things)) true
+                  :else  (recur (rest things)))))
+        ```
+
+        Using this, we can write `adjoin-set`. If the object to be adjoined is
+        already in the set, we just return the set. Otherwise, we use `cons` to
+        add the object to the list that represents the set:
+
+        ```clj
+        (defn adjoin-set [x set]
+          (if (element-of-set? x set)
+              set
+              (conj set x)))
+        ```
+
+        For `intersection-of-set` we can use a recursive strategy. If we know
+        how to form the intersection of `set2` and the `rest` of `set1`, we
+        only need to decide whether to include the `first` of `set1` in this.
+        But this depends on whether `(first set1)` is also in `set2`. Here is
+        the resulting procedure:
+
+        ```clj
+        (defn intersection-set [set1 set2]
+          (cond (or (empty? set1) (empty? set2)) '()
+                (element-of-set? (first set1) set2)
+                  (conj (intersection-set (rest set1) set2)
+                        (first set1))
+                :else (intersection-set (rest set1) set2)))
+        ```
+
+        Can you turn this into an iterative procedure using `loop`?
+
+      %data.q-a
+        %md
+          ```clj
+          (defn intersection-set [set1 set2]
+            (loop [accu   '()
+                   things set1]
+              (cond (empty? things) accu
+                    (element-of-set? (first things) set2) (recur (conj accu (first things)) (rest things))
+                    :else (recur accu (rest things)))))
+          ```
+
+      %md
+        In designing a representation, one of the issues we should be concerned
+        with is efficiency. Consider the number of steps required by our set
+        operations. Since they all use `element-of-set?`, the speed of this
+        operation has a major impact on the efficiency of the set
+        implementation as a whole. Now, in order to check whether an object is
+        a member of a set, `element-of-set?` may have to scan the entire set.
+        (In the worst case, the object turns out not to be in the set.) Hence,
+        if the set has \\(n\\) elements, `element-of-set?` might take up to
+        \\(n\\) steps. Thus, the number of steps required grows as
+        \\(\Theta(n)\\). The number of steps required by `adjoin-set`, which
+        uses this operation, also grows as \\(\Theta(n)\\). For
+        `intersection-of-set`, which does an `element-of-set?` check for each
+        element of `set1`, the number of steps required grows as the product of
+        the sizes of the sets involved, or \\(\Theta(n^2)\\) for two sets of
+        size \\(n\\). The same will be true of `union-set`.
+
+    %data.exercises
+      %data.exercise
+        %md
+          Implement the `union-set` operation for the unordered-list
+          representation of sets.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn union-set [set1 set2]
+              (loop [accu   set2
+                     things set1]
+                (cond (empty? things) accu
+                      (element-of-set? (first things) accu) (recur accu (rest things))
+                      :else (recur (conj accu (first things)) (rest things)))))
+            ```
+
+            Or, we could take advantage of the function, `accumulate` we made
+            in section 2.2.3
+
+            ```clj
+            (defn union-set [set1 set2]
+              (accumulate #(adjoin-set %1 %2)
+                          set1
+                          set2))
+            ```
+
+      %data.exercise
+        %md
+          We specified that a set would be represented as a list with no
+          diplicates. Now suppose we allow duplicates. For instance, the set
+          \\(\{1,2,3\}\\) could be represented as the list `(2 3 2 1 3 2 2)`.
+          Design procedures `element-of-set?`, `adjoin-set`, `union-set`, and
+          `intersection-set` that operation on this representation. How does
+          the efficiency of each compare with the corresponding procedure for
+          the non-duplicate representation? Are there applications for which
+          you would use this representatioin in preference to the non-duplicate
+          one?
+
+        %data.q-a
+          %md
+            Let's use some of Clojure Core's functions for this. We'll have to
+            make some assumptions about their efficiency (you can look this up
+            if you're actually interested).
+
+            ```clj
+            (defn element-of-set? [x set]
+              (loop [things set]
+                (cond (empty? things) false
+                      (= (first things) x) true
+                      :else (recur (rest things)))))
+
+            (defn adjoin-set [x set]
+              (conj set x))
+
+            (defn intersection-set [set1 set2]
+              (loop [accu   '()
+                     things set1]
+                (cond (empty? things) accu
+                      (element-of-set? (first things) set2) (recur (conj accu (first things)) (rest things))
+                      :else (recur accu (rest things)))))
+
+            (defn union-set [set1 set2]
+              (concat set1 set2))
+            ```
+
+            This would be a useful representation for client-side computing
+            (if we wanted to minimize client-side computation at the cost of
+            server-side computation) where the client can only add things to
+            sets, and never remove things (not even in the form of
+            `intersection-set`). That way everything is constant time
+            \\(\Theta(1)\\). For instance, if you wanted to keep a tally of the
+            links each user clicks while on your site. Since a user cannot
+            "unclick" a link, we will never have a need for removing items from
+            our set (of links clicked for this user). Anything where you need
+            to ensure an element is not in this list is going to be costly
+            (because we have to use `element-of-set?`).
+
+    %data.ssub{:title "Sets as Ordered Lists"}
+      %md
+        one way to speed up our set operations is to change the representation
+        so that the set elements are listed in increasing order. To do this, we
+        need some way to compare two objects so that we can say which is
+        bigger. For example, we could compare symbols lexicographically, or we
+        could agree on some method for assigning a unique number to an object
+        and then compare the elements by comparing the corresponding numbers.
+        To keep our discussion simple, we will consider only the case where the
+        set elements are numbers, so that we can compare elements using
+        \\(\gt\\) and \\(\lt\\). We will represent a set of numbers by listing
+        its elements in increasing order. Whereas our first representation
+        above allowed us to represent the set \\(\{1,3,6,10\}\\) by listing the
+        elements in any order, our new representation allows only the list `(1
+        3 6 10)`.
+
+        One advantage of ordering shows up in element-of-set?: In checking for
+        the presence of an item, we no longer have to scan the entire set. If
+        we reach a set element that is larger than the item we are looking for,
+        then we know that the item is not in the set:
+
+        ```clj
+        (defn element-of-set? [x set]
+          (loop [things set]
+            (cond (= (first things) x) true
+                  (> (first things) x) false
+                  :else (recur (rest things)))))
+        ```
+
+        How many steps does this save? In the worst case, the item we are
+        looking for may be the largest one in the set, so the number of steps
+        is the same as for the unordered representation. On the other hand, if
+        we search for items of many different sizes we can expect that
+        sometimes we will be able to stop searching at a point near the
+        beginning of the list and that other times we will still need to
+        examine most of the list. On the average we should expect to have to
+        examine about half of the items in the set. Thus, the average number of
+        steps required will be about \\(n/2\\). This is still \\(\Theta(n)\\)
+        growth, but it does save us, on the average, a factor of 2 in number of
+        steps over the previous implementation.
+
+        We obtain a more impressive speedup with `intersection-set`. In the
+        unordered representation this operation required \\(\Theta(n^2)\\)
+        steps, because we performed a complete scan of `set2` for each element
+        of `set1`. But with the ordered representation, we can use a more
+        clever method. Begin by comparing the initial elements, `x1` and `x2`,
+        of the two sets. If `x1` equals `x2`, then that gives an element of the
+        intersection, and the rest of the intersection is the intersection of
+        the `rest` of the two sets.  Suppose, however, that `x1` is less than
+        `x2`.  Since `x2` is the smallest element in `set2`, we can immediately
+        conclude that `x1` cannot appear anywhere in `set2` and hence is not in
+        the intersection. Hence, the intersection is equal to the intersection
+        of `set2` with the `rest` of `set1`.  Similarly, if `x2` is less than
+        `x1`, then the intersection is given by the intersection of `set1` with
+        the `rest` of `set2`. Here is the procedure:
+
+        ```clj
+        (defn intersection-set* [set1 set2]
+          (loop [accu    '()
+                 things1 set1
+                 things2 set2]
+            (if (or (empty? things1) (empty? things2)) accu
+              (let [x1 (first set1)
+                    x2 (first set2)]
+                (cond (= x1 x2) (recur (conj accu x1) (rest things1) (rest things2))
+                      (< x1 x2) (recur accu (rest things1) things2)
+                      (> x1 x2) (recur accu things1 (rest things2)))))))
+
+        (defn intersection-set [set1 set2]
+          (reverse (intersection-set* set1 set2)))
+        ```
+
+        To estimate the number of steps required by this process, observe that
+        at each step we reduce the intersection problem to computing
+        intersections of smaller sets -- removing the first element from `set1`
+        or `set2` or both. Thus, the number of steps required is at most the
+        sum of the sizes of `set1` and `set2`, rather than the product of the
+        sizes as with the unordered representation. This is \\(\Theta(n)\\)
+        growth rather than \\(\Theta(n^2)\\) -- a considerable speedup, even
+        for sets of moderate size.
+
+    %data.exercises
+      %data.exercise
+        %md
+          Give an implementation of `adjoin-set` using the ordered
+          representation. By analogy with `element-of-set?` show how to take
+          advantage of the ordering to produce a procedure that requires on
+          average about half as many steps as with the unordered
+          representatioin.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn adjoin-set [x set]
+              (loop [searched  '()
+                     searching set]
+                (cond (empty? searching) (reverse (conj searched x))
+                      (= x (first searching)) set
+                      (< x (first searching)) (recur (conj searched (first searching))
+                                                     (rest searching))
+                      (> x (first searching)) (concat (reverse searched) (conj searching x))
+                      :else (throw (Exception. "Something went wrong with the adjoin. Try again.")))))
+            ```
+
+      %data.exercise
+        %md
+          Give a \\(\Theta(n)\\) implementation of `union-set` for sets
+          represented as ordered lists.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn union-set [set1 set2]
+              (loop [accu    '()
+                     things1 set1
+                     things2 set2]
+                (let [x1 (first set1)
+                      x2 (first set2)]
+                  (cond (empty? things2) (concat (reverse accu) (things1))
+                        (empty? things1) (concat (reverse accu) (things2))
+                        (<= x1 x2) (recur (conj accu x1) (rest things1) things2)
+                        (>  x1 x2) (recur (conj accu x2) things1 (rest things2))
+                        :else (throw (Exception. "Something went wrong with the union. Try again."))))))
+            ```
+
+    %data.ssub{:title "Sets as Binary Trees"}
+      %md
+        We can do better than the ordered-list representation by arranging the
+        set elements in the form of a tree. Each node of the tree holds one
+        element of the set, called the "entry" at that node, and a link to each
+        of two other (possibly empty) nodes. The "left" link points to elements
+        smaller than the one at the node, and the "right" link to elements
+        greater than one at the node. Figure 2.16 shows some trees that
+        represent the set \\(\{1,3,5,7,9,11\}\\). The same set may be
+        represented by a tree in a number of different ways. The only thing we
+        require for valid representation is that all elements in the left
+        subtree be smaller than the node entry and that all elements in the
+        right subtree be larger.
+
+      %data.fig{:footer "Various binary trees represent the set {1,3,5,7,9,11}"}
+
+      %md
+        The advantage of the tree representation is this: Suppose we want to
+        check whether a number \\(x\\) is contained in a set. We begin by
+        comparing \\(x\\) with the entry in the top node. If \\(x\\) is less
+        than this, we know that we need only search the left subtree; if
+        \\(x\\) is greater, we need only search the right subtree. Now, if the
+        tree is "balanced," each of these subtrees will be about half the size
+        of the original. Thus, in one step we have reduced the problem of
+        searching a tree of size \\(n\\) to searching a tree of size \\(n/2\\).
+        Since the size of the tree is halved at each step, we should expect
+        that the number of steps needed to search a tree of size \\(n\\) grows
+        as \\(\Theta(\log n)\\).<<Halving the size of the problem at each step
+        is the distinguishing characteristic of logarithmic growth, as we saw
+        with the fast-exponentiation algorithm of section 1.2.4 and the
+        half-interval search method of section 1.3.3.>> For large sets, this
+        will be a significant speedup over the previous representations.
+
+        We can represent trees by using lists. Each node will be a list of
+        three items: the entry at the node, the left subtree, and the right
+        subtree. A left or right subtree of the empty list will indicate that
+        there is no subtree connected there. We can describe this
+        representation by the following procedure:<<We are representing sets in
+        terms of trees, and trees in terms of lists -- in effect, a data
+        abstraction built upon a data abstraction. We can regard the procedures
+        entry, left-branch, right-branch, and make-tree as a way of isolating
+        the abstraction of a "binary tree" from the particular way we might
+        wish to represent such a tree in terms of list structure.>>
+
+        ```clj
+        (defn entry [tree]
+          (first tree))
+
+        (defn left-branch [tree]
+          (second tree))
+
+        (defn right-branch [tree]
+          (nth tree 2))
+
+        (defn make-tree [entry left right]
+          (list entry left right))
+        ```
+
+        Now we can write the `element-of-set?` procedure using the strategy described above:

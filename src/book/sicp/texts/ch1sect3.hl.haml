@@ -1338,7 +1338,7 @@
 
         ```clj
         (defn sqrt [x]
-          (fixed-point-of-transform #(/ x y)
+          (fixed-point-of-transform #(/ x %)
                                     average-damp
                                     1.0))
         ```
