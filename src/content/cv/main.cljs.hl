@@ -7,6 +7,7 @@
   (head
     (title "Aaron's CV")
     (head/viewport)
+    (head/google-analytics)
     (head/bootstrap)) 
   (body
     (nav/fixed)

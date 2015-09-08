@@ -57,7 +57,7 @@
 
 (defelem sicp-item [_ _]
   (li :class (cell= {:active (= location "book")})
-      (a :href "/book/sicp.html" "SICP")))
+      (a :href "/book/sicp/index.html" "SICP")))
 
 
 (defelem fixed-offset [_ _]
