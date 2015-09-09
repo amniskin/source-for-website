@@ -15,6 +15,10 @@
 (html :lang "en"
   (head
     (title "Home of a Mathema-Niskin!")
+    (html-meta :name "keywords"
+               :content "Aaron, Niskin, Math, Tutor, Miami, Florida, Education, Computer, Computing, Science, Physics, calculus, algebra, set theory")
+    (html-meta :name "description"
+               :content "This is my personal site. I have a blog and a translation of SICP into the more modern Clojure (with Clojure core adaptation).")
     (head/viewport)
     (head/google-analytics)
     (head/bootstrap)) 

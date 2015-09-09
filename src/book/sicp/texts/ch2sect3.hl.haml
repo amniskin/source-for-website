@@ -1248,4 +1248,165 @@
           (list entry left right))
         ```
 
-        Now we can write the `element-of-set?` procedure using the strategy described above:
+        Now we can write the `element-of-set?` procedure using the strategy
+        described above:
+
+        ```clj
+        (defn element-of-set? [x set]
+          (cond (empty? set) false
+                (= x (entry set)) true
+                (< x (entry set)) (element-of-set? x (left-branch set))
+                (> x (entry set)) (element-of-set? x (right-branch set))
+                :else (throw (Exception. "Something went wrong with element-of-set?"))))
+        ```
+
+        But since this involves recursion, we should try to formulate this
+        using `loop` and `recur` as follows:
+
+        ```clj
+        (defn element-of-set? [x set]
+          (loop [things set]
+            (cond (empty? things) false
+                  (= x (entry things)) true
+                  (< x (entry things)) (recur x (left-branch things))
+                  (> x (entry things)) (recur x (right-branch things))
+                  :else (throw (Exception. "Something went wrong with element-of-set?")))))
+        ```
+
+        Adjoining an item to a set is implemented similarly and also requires
+        \\(\Theta(\log n)\\) steps. To adjoin an item \\(x\\), we compare
+        \\(x\\) with the node entry to determine whether \\(x\\) should be
+        added to the right or to the left branch, and having adjoined \\(x\\)
+        to the appropriate branch we piece this newly constructed branch
+        together with the original entry and the other branch. If \\(x\\) is
+        equal to the entry, we just return the node. If we are asked to adjoin
+        \\(x\\) to an empty tree, we generate a tree that has \\(x\\) as the
+        entry and empty right and left branches. Here is the procedure:
+
+        ```clj
+        (defn adjoin-set [x set]
+          (cond (empty? set) (make-tree x '() '())
+                (= x (entry set)) set
+                (< x (entry set)) (make-tree (entry set)
+                                             (adjoin x (left-branch set))
+                                             (right-branch set))
+                (> x (entry set)) (make-tree (entry set)
+                                             (left-branch set)
+                                             (adjoin x (right-branch set)))
+                :else (throw (Exception. "Something went wrong with adjoin-set"))))
+        ```
+
+        The above claim that searching the tree can be performed in a
+        logarithmic number of steps rests on the assumption that the tree is
+        "balanced," i.e., that the left and right subtree of every tree have
+        approximately the same number of elements, so that each subtree
+        contains about half the elements of its parent. But how can we be
+        certain that the trees we construct will be balanced? Even if we start
+        with a balanced tree, adding elements with `adjoin-set` may produce an
+        unbalanced result. Since the position of a newly adjoined element
+        depends on how the element compares with the items already in the set,
+        we can expect that if we add elements "randomly" the tree will tend to
+        be balanced on the average (note: in this example, the top level might
+        not be balanced, but as we add more and more elements in this "random"
+        fashion, we can safely assume that on the average, each level
+        approximately halves the number of elements, even if it's not true for
+        the first level in particular). But this is not a guarantee. For
+        example, if we start with an ampty set and adjoin the numbers 1 through
+        7 in a sequence we end up with the highly unbalanced tree shown in
+        figure 2.17. In this tree all the left subtrees are empty, so it has no
+        advantage over a simple ordered list. One way to solve this problem is
+        to define an operation that transforms an arbitrary tree into a
+        balanced tree with the same elements. Then we can perform this
+        transformation after every few `adjoin-set` operations to keep our set
+        in balance. There are also other ways to solve this problem, most of
+        which involve designing new data structures for which searching and
+        insertion both can be done in \\(\Theta(\log n)\\) setps.<<Examples of
+        such structures include *B-trees* and *red-black trees*. There is a
+        large literature on data structures devoted to this problem. See
+        Cormen, Leiserson, and Rivest 1990.>>
+
+      %data.fig{:footer "Unbalanced tree produced by adjoining 1 through 7 in sequence."}
+
+    %data.exercises
+      %data.exercise
+        %md
+          Each of the following two procedures converts a binary tree to a list.
+
+          ```clj
+          (defn tree->list-1 [tree]
+            (if (empty? tree)
+                '()
+                (concat (tree->list-1 (left-branch tree))
+                        (conj (tree->list-1 (right-branch tree))
+                              (entry tree)))))
+
+          (defn tree->list-2 [tree]
+            (let [copy-to-list (fn [tree result-list]
+                                 (if (empty? tree)
+                                     result-list
+                                     (copy-to-list (left-branch tree)
+                                                   (conj (copy-to-list 
+                                                           (right-branch tree)
+                                                           result-list)
+                                                         (entry tree)))))]
+              (copy-to-list tree '())))
+          ```
+
+          a. Do the two procedures produce the same result for every tree? If
+          not, how do the results differ? What lists do the two procedures
+          produce for the trees in figure 2.16?
+
+        %data.q-a
+          %md
+            Since both procedures put the `entry` in the middle of the "lesser"
+            elements and the "greater" elements, we can be guaranteed that the
+            elements of the tree will show up in the same order. It is for that
+            reason we also know that each of the trees in figure 2.16 will give
+            the same list with both procedures. Each of them turns this sort of
+            tree into an ordered list, so the trees from figure 2.16 would turn
+            into,
+
+            ```clj
+            => (1 3 5 7 9 11)
+            ```
+
+        %md
+          b. Do the two procedures have the same order of growth in the number
+          of steps required to convert a balanced tree with \\(n\\) elements to
+          a list? If not, which one grows more slowly?
+
+        %data.q-a
+          %md
+            Since the `concat` function is \\(\Theta(n)\\) in terms of steps
+            required and the length of the first list (the prepending one), we
+            can see that `tree->list-1` is going to take more steps than
+            `tree->list-2`. Exactly how many more, we can only estimate (it
+            depends on how balanced the tree is).
+
+            If we assume that the tree is balanced, then every level doubles
+            the number of calls to `concat` but halves the number of elements
+            in each `concat`. Hence the number of computations done in an
+            `concat` procedure remains constant at \\(n\\) (roughly) accross
+            all levels. Since there are approximately \\(\log n\\) levels, we
+            can conclude that the calls to `concat` take \\(\theta(n\log n)\\)
+            steps. If we are to include the calls to `conj` as well, we find
+            (through similar reasoning), that the total number of steps should
+            be approximately \\(\Theta(n\log n+n)=\Theta(n\log n)\\) steps.
+
+            The second procedure, `tree->list-2`, however, uses `conj` which is
+            always constant time \\(\Theta(1)\\) as the main building block,
+            which really speeds things up for larger trees. As a matter of
+            fact, if we notice that `conj` is called approximately once per
+            element, we find that the number of steps required is approximately
+            \\(\Theta(n)\\). So, to answer the question, `tree->list-2` grows
+            more slowly (which is to say it is faster) than `tree->list-1`.
+
+      %data.exercise
+        %md
+          The following procedure `list->tree` converts an ordered list to a
+          balanced binary tree. The helper procedure `partial-tree` takes as
+          arguments an integer \\(n\\) and list of at least \\(n\\) elements
+          and constructs a balanced tree containing the first \\(n\\) elements
+          of the list. The result returned by `partial-tree` is a pair (formed
+          with `conj`) whose `first` is the constructed tree and whose `rest`
+          is the list of elements not included in the tree.

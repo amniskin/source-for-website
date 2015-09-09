@@ -19,6 +19,10 @@
 (html
   (head
     (title "SICP... Now in Clojure!")
+    (html-meta :name "keywords"
+               :content "Aaron, Niskin, Clojure, SICP, Structure and Interpretation of Computer Programs, Functional, programming, computing, learn")
+    (html-meta :name "description"
+               :content "SICP translated into Clojure and augmented by the introduction of Clojure core functions in appropriate locations. All exercises have solutions.")
     (head/bootstrap)
     (head/viewport)
     (head/google-analytics)
