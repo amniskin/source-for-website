@@ -1410,3 +1410,41 @@
           of the list. The result returned by `partial-tree` is a pair (formed
           with `conj`) whose `first` is the constructed tree and whose `rest`
           is the list of elements not included in the tree.
+
+          ```clj
+          (defn list->tree [elements]
+            (first (partial-tree elements (count elements))))
+          ```
+
+          Where,
+
+          ```clj
+          (defn partial-tree [elts n]
+            (if (= n 0)
+                (conj elts '())
+                (let [left-size      (quotient (dec n) 2)
+                      left-result    (partial-tree elts left-size)
+                      left-tree      (first left-result)
+                      non-left-elts  (rest left-result)
+                      right-size     (- n (inc left-size))
+                      this-entry     (first non-left-elts)
+                      right-result   (partial-tree (rest non-left-elts) right-size)
+                      right-tree     (first right-result)
+                      remaining-elts (rest right-result)]
+                  (conj remaining-elts (make-tree this-entry left-tree right-tree)))))
+          ```
+
+          and we can define `quotient` as,
+
+          ```clj
+          (defn quotient [a b]
+            (/ (- a (mod a b)) b))
+          ```
+
+          a. Write a short paragraph explaining as clearly as you can how
+          `partial-tree` works. Draw the tree produced by `list->tree` for the
+          list `(1 3 5 7 9 11)`.
+
+        %data.q-a
+          %md
+            I think the best explanation of how `partial-tree` works would be to show how `(list->tree '(1 3 5 7 9 11))` is evaluated.
