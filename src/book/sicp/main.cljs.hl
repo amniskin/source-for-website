@@ -14,6 +14,7 @@
             [book.sicp.texts.ch2sect1 :as ch2sect1]
             [book.sicp.texts.ch2sect2 :as ch2sect2]
             [book.sicp.texts.ch2sect3 :as ch2sect3]
+            [book.sicp.texts.ch2sect4 :as ch2sect4]
             ))
 
 (html
@@ -45,5 +46,6 @@
           (ch2sect1/content)
           (ch2sect2/content)
           (ch2sect3/content)
+          (ch2sect4/content)
           (footer/content)
           )))))

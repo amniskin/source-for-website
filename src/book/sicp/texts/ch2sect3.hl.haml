@@ -1447,4 +1447,816 @@
 
         %data.q-a
           %md
-            I think the best explanation of how `partial-tree` works would be to show how `(list->tree '(1 3 5 7 9 11))` is evaluated.
+            For each \\(n\\), `(partial-tree elts n)` breaks the tree into a
+            list where the first element is a tree of the first \\(n\\)
+            elements, and the rest of the list is the rest of the elements
+            (after the first \\(n\\) are taken out). So in a sense,
+            `(partial-tree elts n)` is like `(conj (drop n elts)
+            tree-made-from-first-n-elts)`. So, if we define `n` as `(count
+            elts)` and `m` as `(quotient (dec n) 2)`, then `(partial-tree elts
+            m)` would be a list where the first element is a tree made from the
+            first \\(m\\) elements, and the rest of the tree is `(drop m elts)`
+            (a list of the remaining elements).
+
+            In our procedure we make use of this fact by using the same
+            procedure again on the remaining elements (hence making the right
+            branch of the tree).
+
+        %md
+          b. What is the order of growth in the number of steps required by
+          `list->tree` to convert a list of \\(n\\) elements?
+
+        %data.q-a
+          %md
+            Since `partial-tree` uses only the most efficient list opperations
+            (like `conj`, `first`, etc.) which are all constant time, if we
+            temporarily exclude the recursive calls, `partial-tree` is a
+            constant time procedure. Now let's compute how the recursive calls
+            affect the order of growth. Note that `partial-tree` is called once
+            per element of the list and once or twice for each leaf.
+
+            So, the `list->tree` procedure, which uses `count` (a
+            \\(\Theta(n)\\) procedure), would be about
+            \\(\Theta(2n+number-of-leaves)\\) which is \\(\Theta(n)\\). So the
+            procedure should have a growth rate of \\(\Theta(n)\\).
+
+      %data.exercise
+        %md
+          Use the results of exercises 2.63 and 2.64 to give \\(\Theta(n)\\)
+          implementations of `unioin-set` and `intersection-set` for sets
+          implemented as (balanced) binary trees.<<Exercises 2.63-2.65 are due
+          to Paul Hilfinger.>>
+
+        %data.q-a
+          %md
+            We can use the `intersection-set` and `unioin-set` procedures
+            developed for sets as ordered lists.
+
+            ```clj
+            (defn union-set* [set1 set2]
+              (list->tree
+                (union-set (tree->list-2 set1)
+                           (tree->list-2 set2))))
+            ```
+
+            And similarly,
+
+            ```clj
+            (defn intersection-set* [set1 set2]
+              (list->tree
+                (intersection-set (tree->list-2 set1)
+                                  (tree->list-2 set2))))
+            ```
+
+    %data.ssub{:title "Sets and Information Retrieval"}
+      %md
+        We have examined options for using lists to represent sets and have
+        seen how the choice of representation for a data object can have a
+        large impact on the performance of the programs that use the data.
+        Another reason for concentrating on sets is that the techniques
+        discussed here appear again and again in applications involving
+        information retrieval.
+
+        Consider a data base containing a large number of individual records,
+        such as the personnel files for a company or the transactions in an
+        accounting system. A typical data-management system spends a large
+        amount of time accessing or modifying the data in the records and
+        therefore requires an efficient method for accessing records. This is
+        done by identifying a part of each record to serve as an identifying
+        *key*. A key can be anything that uniquely identifies the record. For a
+        personnel file, it might be an employee's ID number. For an accounting
+        system, it might be a transaction number. Whatever the key is, when we
+        define the record as a data structure we should include a key selector
+        procedure that retrieves the key associated with a given record.
+
+        Now we represent the data base as a set of records. To locate the
+        record with a given key we use a procedure `lookup`, which takes as
+        arguments a key and a data base and which returns the record that has
+        that key, or `nil` if there is no such record. `Lookup` is implemented
+        in almost the same way as `element-of-set?`. For example, if the set of
+        records is implemented as an unordered list, we could use
+
+        ```clj
+        (defn lookup [given-key set-of-records]
+          (loop [things set-of-records]
+            (cond (empty? things) nil
+                  (= given-key (key (first things))) (first things)
+                  :else (recur (rest things)))))
+        ```
+
+        Of course, there are better ways to represent large sets than as
+        unordered lists. Information-retrieval systems in which records have to
+        be "randomly accessed" are typically implemented by a tree-based
+        method, such as the binary-tree representation discussed previously. In
+        designing such a system the methodology of data abstraction can be a
+        great help. The designer can create an initial implementation using a
+        simple, straightforward representation such as unordered lists. This
+        will be unsuitable for the eventual system, but it can be useful in
+        providing a "quick and dirty" data base with which to test the rest of
+        the system. Later on, the data representation can be modified to be
+        more sophisticated. If the data base is accessed in terms of abstract
+        selectors and constructors, this change in representation will not
+        require any changes to the rest of the system.
+
+    %data.exercises
+      %data.exercise
+        %md
+          Implement the `lookup` procedure for the case where the set of
+          records is structured as a binary tree, ordered by the numerical
+          values of the keys.
+
+        %data.q-a
+          %md
+            For now let's assume that the keys are all integers (so that we can
+            use the ordering that already exists for integers). Before we can
+            implement the `lookup` procedure for binary trees, we need to
+            define the `key` procedure we see in their definition (which
+            amounts to defining how key-value pairs are to be stored). One way
+            would be to consider key value pairs to be lists where the first
+            element is the key and the second is the value. So,
+
+            ```clj
+            (defn make-key-val-pair [key val]
+              (list key val))
+            (def key first)
+            (def val second)
+            ```
+
+            Then,
+
+            ```clj
+            (defn lookup [given-key set-of-records]
+              (loop [things set-of-records]
+                (cond (empty? things) nil
+                      (= given-key (key (first things))) (val (first things))
+                      (< given-key (key (entry things))) (recur (left-branch things))
+                      (> given-key (key (entry things))) (recur (right-branch things))
+                      :else (throw (Exception. "Something went wrong with binary-tree-lookup")))))
+            ```
+
+    %data.ssub{:title "Example: Huffman Encoding Trees"}
+      %md
+        This section provides practice in the use of list structure and data
+        abstraction to manipulate sets and trees. The application is to methods
+        for representing data as sequences of ones and zeros (bits). For
+        example, the ASCII standard code used to represent text in computers
+        encodes each character as a sequence of seven bits. Using seven bits
+        allows us to distinguish \\(2^7\\), or 128, possible different
+        characters. In general, if we want to distinguish \\(n\\) different
+        symbols, we will need to use \\(log_2 n\\) bits per symbol. If all our
+        messages are made up of the eight symbols A, B, C, D, E, F, G, and H,
+        we can choose a code with three bits per character, for example
+
+        $$\begin{array}{llll}
+        \text{A } 000 & \text{C } 010 & \text{E } 100 & \text{G } 110\\\\
+        \text{B } 001 & \text{D } 011 & \text{F } 101 & \text{H } 111
+        \end{array}$$
+
+        with this code, the message
+
+        BACADAEAFABBAAAGAH
+
+        is encoded into the string of 54 bits
+
+        001000010000011000100000101000001001000000000110000111
+
+        Codes such as ASCII and the A-through-H code above are known as
+        *fixed-length* codes, because they represent each symbol in the message
+        with the same number of bits. It is sometimes advantageous to use
+        *variable-length* codes, in which different symbols may be represented
+        by different numbers of bits. For example, Morse code does not use the
+        same number of dots and dashes for each letter of the alphabet. In
+        particular, E, the most frequent letter, is represented by a single
+        dot. In general, if our messages are such that some symbols appear very
+        frequently and some very rarely, we can encode data more efficiently
+        (i.e., using fewer bits per message) if we assign shorter codes to the
+        frequent symbols. Consider the following alternative code for the
+        letters A through H:
+
+        $$\begin{array}{llll}
+        \text{A } 0 & \text{C } 1010 & \text{E } 1100 & \text{G } 1110\\\\
+        \text{B } 100 & \text{D } 1011 & \text{F } 1101 & \text{H } 1111
+        \end{array}$$
+
+        with this code, the same message as above is encoded as the string
+
+        100010100101101100011010100100000111001111
+
+        This string contains 42 bits, so it saves more than 20% in space in
+        comparison with the fixed-length code shown above.
+
+        One of the difficulties of using a variable-length code is knowing when
+        you have reached the end of a symbol in reading a sequence of zeros and
+        ones. Morse code solves this problem by using a special *separator
+        code* (in this case, a pause) after the sequence of dots and dashes for
+        each letter. Another solution is to design the code in such a way that
+        no complete code for any symbol is the beginning (or prefix) of the
+        code for another symbol. Such a code is called a *prefix code*. In the
+        example above, A is encoded by 0 and B is encoded by 100, so no other
+        symbol can have a code that begins with 0 or with 100.
+
+        In general, we can attain significant savings if we use variable-length
+        prefix codes that take advantage of the relative frequencies of the
+        symbols in the messages to be encoded. One particular scheme for doing
+        this is called the Huffman encoding method, after its discoverer, David
+        Huffman. A Huffman code can be represented as a binary tree whose
+        leaves are the symbols that are encoded. At each non-leaf node of the
+        tree there is a set containing all the symbols in the leaves that lie
+        below the node. In addition, each symbol at a leaf is assigned a weight
+        (which is its relative frequency), and each non-leaf node contains a
+        weight that is the sum of all the weights of the leaves lying below it.
+        The weights are not used in the encoding or the decoding process. We
+        will see below how they are used to help construct the tree.
+
+      %data.fig{:footer "A Huffman encoding tree."}
+
+      %md
+        Figure 2.18 shows the Huffman tree for the A-through-H code given
+        above. The weights at the leaves indicate that the tree was designed
+        for messages in which A appears with relative frequency 8, B with
+        relative frequency 3, and the other letters each with relative
+        frequency 1.
+
+        Given a Huffman tree, we can find the encoding of any symbol by
+        starting at the root and moving down until we reach the leaf that holds
+        the symbol. Each time we move down a left branch we add a 0 to the
+        code, and each time we move down a right branch we add a 1. (We decide
+        which branch to follow by testing to see which branch either is the
+        leaf node for the symbol or contains the symbol in its set.) For
+        example, starting from the root of the tree in figure 2.18, we arrive
+        at the leaf for D by following a right branch, then a left branch, then
+        a right branch, then a right branch; hence, the code for D is 1011.
+
+        To decode a bit sequence using a Huffman tree, we begin at the root and
+        use the successive zeros and ones of the bit sequence to determine
+        whether to move down the left or the right branch. Each time we come to
+        a leaf, we have generated a new symbol in the message, at which point
+        we start over from the root of the tree to find the next symbol. For
+        example, suppose we are given the tree above and the sequence 10001010.
+        Starting at the root, we move down the right branch, (since the first
+        bit of the string is 1), then down the left branch (since the second
+        bit is 0), then down the left branch (since the third bit is also 0).
+        This brings us to the leaf for B, so the first symbol of the decoded
+        message is B. Now we start again at the root, and we make a left move
+        because the next bit in the string is 0. This brings us to the leaf for
+        A. Then we start again at the root with the rest of the string 1010, so
+        we move right, left, right, left and reach C. Thus, the entire message
+        is BAC.
+
+    %data.ssub{:title "Generating Huffman Trees"}
+      %md
+        Given an "alphabet" of symbols and their relative frequencies, how do
+        we construct the "best" code? (In other words, which tree will encode
+        messages with the fewest bits?) Huffman gave an algorithm for doing
+        this and showed that the resulting code is indeed the best
+        variable-length code for messages where the relative frequency of the
+        symbols matches the frequencies with which the code was constructed. We
+        will not prove this optimality of Huffman codes here, but we will show
+        how Huffman trees are constructed.<<See Hanning 1980 for a discussion
+        of the mathematical properties of Huffman codes.>>
+
+        The algorithm for generating a Huffman tree is very simple. The idea is
+        to arrange the tree so that the symbols with the lowest frequency
+        appear farthest away from the root. Begin with the set of leaf nodes,
+        containing symbols and their frequencies, as determined by the initial
+        data from which the code is to be constructed. Now find two leaves with
+        the lowest weights and merge them to produce a node that has these two
+        nodes as its left and right branches. The weight of the new node is the
+        sum of the two weights. Remove the two leaves from the original set and
+        replace them by this new node. Now continue this process. At each step,
+        merge two nodes with the smallest weights, removing them from the set
+        and replacing them with a node that has these two as its left and right
+        branches. The process stops when there is only one node left, which is
+        the root of the entire tree. Here is how the Huffman tree of figure
+        2.18 was generated:
+
+      %table
+        %tr
+          %td
+            Initial leaves
+          %td
+            {(A 8) (B 3) (C 1) (D 1) (E 1) (F 1) (G 1) (H 1)}
+        %tr
+          %td
+            Merge   
+          %td
+            {(A 8) (B 3) ({C D} 2) (E 1) (F 1) (G 1) (H 1)}
+        %tr
+          %td
+            Merge 
+          %td
+            {(A 8) (B 3) ({C D} 2) ({E F} 2) (G 1) (H 1)}
+        %tr
+          %td
+            Merge
+          %td
+            {(A 8) (B 3) ({C D} 2) ({E F} 2) ({G H} 2)}
+        %tr
+          %td
+            Merge
+          %td
+            {(A 8) (B 3) ({C D} 2) ({E F G H} 4)}
+        %tr
+          %td
+            Merge
+          %td
+            {(A 8) ({B C D} 5) ({E F G H} 4)}
+        %tr
+          %td
+            Merge
+          %td
+            {(A 8) ({B C D E F G H} 9)}
+        %tr
+          %td
+            Final merge
+          %td
+            {({A B C D E F G H} 17)}
+
+      %md
+        The algorithm does not always specify a unique tree, because there may
+        not be unique smallest-weight nodes at each step. Also, the choice of
+        the order in which the two nodes are merged (i.e., which will be the
+        right branch and which will be the left branch) is arbitrary.
+
+    %data.ssub{:title "Representing Huffman Trees"}
+      %md
+        In the exercises below we will work with a system that uses Huffman
+        trees to encode and decode messages and generates Huffman trees
+        according to the algorithm outlined above. We will begin by discussing
+        how trees are represented.
+
+        Leaves of the tree are represented by a list consisting of the symbol
+        `leaf`, the symbol at the leaf, and the weight:
+
+        ```clj
+        (defn make-leaf [symbol weight]
+          (list 'leaf symbol weight))
+        (defn leaf? [object]
+          (= (first object) 'leaf))
+        (defn symbol-leaf [x] (second x))
+        (defn weight-leaf [x] (nth x 2))
+        ```
+
+        A general tree will be a list of a left branch, a right branch, a set
+        of symbols, and a weight. The set of symbols will be simply a list of
+        the symbols, rather than some more sophisticated set representation.
+        When we make a tree by merging two nodes, we obtain the weight of the
+        tree as the sum of the weights of the nodes, and the set of symbols as
+        the union of the sets of symbols for the nodes. Since our symbol sets
+        are represented as lists, we can form the union by using the `concat`
+        procedure we defined in section 2.2.1:
+
+        ```clj
+        (defn make-code-tree [left right]
+          (list left
+                right
+                (concat (symbols left) (symbols right))
+                (+ (weight left) (weight right))))
+        ```
+
+        If we make a tree in this way, we have the following selectors:
+
+        ```clj
+        (defn left-branch [tree] (first tree))
+
+        (defn right-branch [tree] (second tree))
+        (defn symbols [tree]
+          (if (leaf? tree)
+              (list (symbol-leaf tree))
+              (nth tree 2)))
+        (defn weight [tree]
+          (if (leaf? tree)
+              (weight-leaf tree)
+              (nth tree 3)))
+        ```
+
+        The procedures `symbols` and `weight` must do something slightly
+        different depending on whether they are called with a leaf or a general
+        tree. These are simple examples of *generic procedures* (procedures
+        that can handle more than one kind of data), which we will have much
+        more to say about in sections 2.4 and 2.5.
+
+    %data.ssub{:title "The Decoding Procedure"}
+      %md
+        The following procedure implements the decoding algorithm. It takes as
+        arguments a list of zeros and ones, together with a Huffman tree.
+
+        ```clj
+        (defn choose-branch [bit tree]
+          (cond (= bit 0) (left-branch branch)
+                (= bit 1) (right-branch branch)
+                :else (throw (Exception. (str "Bad bit -- CHOOSE-BRANCH " bit)))))
+
+        (defn decode [decode-bits huffman-tree]
+          (loop [accu '()
+                 bits decode-bits
+                 tree huffman-tree]
+            (if (empty? bits) (reverse accu)
+              (let [next (choose-branch (first bits) tree)]
+                (if (leaf? next)
+                    (recur (conj accu (symbol-leaf next))
+                           (rest bits)
+                           huffman-tree)
+                    (recur accu (rest bits) next))))))
+        ```
+
+        The `loop` in this procedure moves "down" the tree, choosing a left or
+        a right branch according to whether the next bit in the list is a zero
+        or a one. (This is done with the procedure `choose-branch`.) When it
+        reaches a leaf, it returns the symbol at that leaf as the next symbol
+        in the message by `conj`ing it onto the accumulator (`accu`). Note the
+        error check in the final clause of choose-branch, which complains if
+        the procedure finds something other than a zero or a one in the input
+        data.
+
+        As a little supplemental exercise, tweak the `decode` procedure to warn
+        the user if the decoding ends on a node rather than a leaf.
+
+      %data.q-a
+        %md
+          ```clj
+          (defn decode [decode-bits huffman-tree]
+            (loop [accu '()
+                   bits decode-bits
+                   tree huffman-tree]
+              (if (empty? bits) 
+                (if (= tree huffman-tree)
+                    (reverse accu)
+                    (do (throw (Exception. "Error: DECODE ended on a partial code."))
+                        (reverse accu)))
+                (let [next (choose-branch (first bits) tree)]
+                  (if (leaf? next) (recur (conj accu (symbol-leaf next))
+                                          (rest bits)
+                                          huffman-tree)
+                      (recur accu (rest bits) next))))))
+          ```
+
+          But with that, we notice that we have to determine equality of trees,
+          which is probably a very taxing procedure. To shorten it, we can
+          instead compare their respective weights. Since we are guaranteed
+          that `tree` will either be `huffman-tree` or a subtree of it, we know
+          that if their respective weights are equal, `tree` must be
+          `huffman-tree`. So,
+
+          ```clj
+          (defn decode [decode-bits huffman-tree]
+            (loop [accu '()
+                   bits decode-bits
+                   tree huffman-tree]
+              (if (empty? bits) 
+                (if (= (weight tree) (weight huffman-tree))
+                    (reverse accu)
+                    (do (throw (Exception. "Error: DECODE ended on a partial code."))
+                        (reverse accu)))
+                (let [next (choose-branch (first bits) tree)]
+                  (if (leaf? next) (recur (conj accu (symbol-leaf next))
+                                          (rest bits)
+                                          huffman-tree)
+                      (recur accu (rest bits) next))))))
+          ```
+
+
+    %data.ssub{:title "Sets of Weighted Elements"}
+      %md
+        In our representation of trees, each non-leaf node contains a set of
+        symbols, which we have represented as a simple list. However, the
+        tree-generating algorithm discussed above requires that we also work
+        with sets of leaves and trees, successively merging the two smallest
+        items. Since we will be required to repeatedly find the smallest item
+        in a set, it is convenient to use an ordered representation for this
+        kind of set.
+
+        We will represent a set of leaves and trees as a list of elements,
+        arranged in increasing order of weight. The following `adjoin-set`
+        procedure for constructing sets is similar to the one described in
+        exercise 2.61; however, items are compared by their weights, and the
+        element being added to the set is never already in it.
+
+        ```clj
+        (defn adjoin-set [x set]
+          (cond (empty? set) (list x)
+                (< (weight x) (weight (first set)))
+                  (conj set x)
+                :else (conj (adjoin-set x (rest set))
+                            (first set))))
+        ```;>
+
+        Note: If we want our program to deal with large lists, we would have to
+        alter our `adjoin-set` procedure so as to avoid stack overflows. Design
+        a non-recursive version of `adjoin-set`.
+
+      %data.q-a
+        %md
+          ```clj
+          (defn adjoin-set [x set]
+            (loop [accu   '()
+                   things set]
+              (cond (empty? things) (reverse (conj accu x))
+                    (< (weight x) (weight (first things)))
+                      (concat (reverse accu) (conj things x))
+                    :else (recur (conj accu (first things)) (rest things)))))
+          ```;>
+
+      %md
+        The following procedure takes a list of symbol-requency pairs such as
+        `((A 4) (B 2) (C 1) (D 1))` and constructs an initial ordered set of
+        leaves, ready to be merged according to the Huffman algorithm:
+
+        ```clj
+        (defn make-leaf-set [pairs]
+          (if (empty? pairs)
+              '()
+              (let [pair (first pairs)]
+                (adjoin-set (make-leaf (first pair)   ; symbol
+                                       (second pair)) ; frequency
+                            (make-leaf-set (rest pairs))))))
+        ```
+
+    %data.exercises
+      %data.exercise
+        %md
+          Define an encoding tree and a sample message:
+
+          ```clj
+          (def sample-tree
+            (make-code-tree (make-leaf 'A 4)
+                            (make-code-tree
+                              (make-leaf 'B 2)
+                              (make-code-tree (make-leaf 'D 1)
+                                              (make-leaf 'C 1)))))
+
+          (def sample-message
+            '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+          ```
+
+          Use the `decode` procedure to decode the message, and give the result.
+
+        %data.q-a
+          %md
+            ```clj
+            '(0 1 1 0 0 1 0 1 0 1 1 1 0)
+            '(A     D A   B   B     C A)
+            ```
+
+      %data.exercise
+        %md
+          The `encode` procedure takes as arguments a message and a tree and
+          produces the list of bits that gives the encoded message.
+
+          ```clj
+          (defn encode [message tree]
+            (if (empty? message)
+                '()
+                (concat (encode (rest message) tree)
+                        (encode-symbol (first message) tree))))
+          ```
+
+          `encode-symbol` is a procedure, which you must write, that returns
+          the list of bits that encodes a given symbol according to a given
+          tree. You should design `encode-symbol` so that it signals an error
+          if the symbol is not in the tree at all. Test your procedure by
+          encoding the result you obtained in exercise 2.67 with the sample
+          tree and seeing whether it is the same as the original sample
+          message.
+
+        %data.q-a
+          %md
+            ```clj
+            (defn encode-symbol* [symbol tree]
+              (loop [accu   '()
+                     things tree]
+                (cond (leaf? things)
+                        (reverse accu)
+                      (element-of-set? (symbols (left-branch tree)))
+                        (recur (conj accu 0) (left-branch tree))
+                      :else (recur (conj accu 1) (right-branch tree)))))
+            
+            (defn encode-symbol [symbol tree]
+              (if (element-of-set? (symbols tree))
+                  (encode-symbol* symbol tree)
+                  (throw
+                    (Exception. 
+                      (str "The symbol: " symbol "was not recognized. Please remove it and try again.")))))
+            ```
+
+            The function `throw` is very important. As you can see, this
+            function does not simply return a string value if the symbol is not
+            in the tree. It throws an exception, which means that it stops all
+            further computation that the function would call and sends this
+            message directly to the top. So any function calling
+            `encode-symbol` is notified immediately when an error occurs, and
+            you can see the benefit therein.  Note that the function `str`
+            takes any number of arguments and places them in a string in the
+            same order. Test it out using variables and whatnot. It's a very
+            useful function.
+
+            How many arguments does this call to `str` have?
+
+          %data.q-a
+            %md
+              3. "The symbol: " is the first, `symbol` is the second, and the
+              remaining string is the third.
+
+      %data.exercise
+        %md
+          The following procedure takes as its argument a list of
+          symbol-frequency pairs (where no symbol appears in more than one
+          pair) and generates a Huffman encoding tree according to the Huffman
+          algorithm.
+
+          ```clj
+          (defn generate-huffman-tree [pairs]
+            (successive-merge (make-leaf-set pairs)))
+          ```
+
+          `make-leaf-set` is the procedure given above that transforms the list
+          of pairs into an ordered set of leaves. `successive-merge` is the
+          procedure you must write, using `make-code-tree` to successively
+          merge the smallest-weight elements of the set until there is only one
+          element left, which is hte desired Huffman tree. (This procedure is
+          slightly tricky, but not really complicated. If you find yourself
+          designing a complex procedure, then you are almost certainly doing
+          something wrong. You can take advantage of the fact that we are using
+          an ordered set representation.)
+
+        %data.q-a
+          %md
+            ```clj
+            (defn successive-merge [set]
+              (loop [things set]
+                (let [right (last things)
+                      not-r (drop-last things)]
+                  (if (empty? not-r)
+                      right
+                      (let [left   (last not-r)
+                            others (drop-last not-r)]
+                        (recur 
+                          (adjoin-set
+                            (make-code-tree left right)
+                            others)))))))
+            ```
+
+      %data.exercise
+        %md
+          The following eight-symbol alphabet with associated relative
+          frequencies was designed to efficiently encode the lyrics of 1950s
+          rock songs. (Note that the "symbols" of an "alphabet" need not be
+          individual letters.)
+
+        %table
+          %tr
+            %td
+              A
+            %td
+              2
+            %td
+              NA
+            %td
+              16
+          %tr
+            %td
+              BOOM
+            %td
+              1
+            %td
+              SHA
+            %td
+              3
+          %tr
+            %td
+              GET
+            %td
+              2
+            %td
+              YIP
+            %td
+              9
+          %tr
+            %td
+              JOB
+            %td
+              2
+            %td
+              WAH
+            %td
+              1
+
+        %md
+          Use `generate-huffman-tree` (exercise 2.69) to generate a
+          corresponding Huffman tree, and use `encode` (exercise 2.68) to
+          encode the following message:
+
+          Get a job
+
+          Sha na na na na na na na na
+
+          Get a job
+
+          Sha na na na na na na na na
+
+          Wah yip yip yip yip yip yip yip yip yip
+
+          Sha boom
+
+          How many bits are required for the encoding? What is the smallest
+          number of bits that would be needed to encode this song if we used a
+          fixed-length code for the eight-symbol alphabet?
+
+        %data.q-a
+          %md
+            The encoding for this will depend on the order in which the
+            elements are given to `make-leaf-set` among other things. As an
+            example, the version of `successive-merge` we used in the previous
+            exercise creates a tree with the "smaller" weight on the right
+            which will affect things, as we'll see. The key is all in the map.
+            One acceptable code might be:
+
+            00011000100010
+
+            000011111111
+
+            00011000100010
+
+            000011111111
+
+            00111010101010101010101
+
+            000000110
+
+            There are a total of 5 bits required for this encoding. We would
+            need 3 bits if it were a fixed-length encdoding. The reason why we
+            would need 3 bits is, \\(2^3=8\\) and there are 8 symbols.
+
+      %data.exercise
+        %md
+          Suppose we have a Huffman tree for an alphabet of \\(n\\) symbols,
+          and that the relative frequencies of the symbols are \\(1, 2, 4, ...,
+          2^{n-1}\\). Sketch the tree for \\(n=5\\); for \\(n=10\\). In such a
+          tree (for general \\(n\\)) how many bits are required to encode the
+          most frequent symbol? the least frequent?
+
+        %data.q-a
+          %md
+            Due to some technical difficulties (read "I really want to get
+            through this section already") I wion't be including the drawings.
+            If you would like them, please feel free to contact me and let me
+            know!
+
+            As for the frequencies: the most frequent symbol will need only one
+            bit. The reason for this is that the frequency of that symbol is
+            greater than or equal to the sum of the frequencies of all the
+            other symbols. So it will only be combined at the very end of the
+            combination process.
+
+            Assuming that there are at least 2 elements in the tree, the least
+            frequent symbol will require \\(n-1\\) bits to encode. The reason
+            for this one is a bit more complicated, but at every step, the
+            partial tree containing the least frequent symbol has the least
+            weight, so it is combined. Since only two things can be combined at
+            a time, we see that the partial tree containing the least frequent
+            element must be combined with a leaf at every stage. So we can
+            reduce our problem to the problem of "how many leaves are there
+            that can be combined with this leaf containing the least frequent
+            symbol?" The answer to that is clearly \\(n-1\\) because there are
+            \\(n\\) leaves.
+
+      %data.exercise
+        %md
+          Consider the encoding procedure that you designed in exercise 2.68.
+          What is the order of growth in the number of steps needed to encode a
+          symbol? Be sure to include the number of steps needed to search the
+          symbol list at each node encountered. To answer this question in
+          general is difficult. Consider the special case where the relative
+          frequencies of the \\(n\\) symbols are as described in exercise 2.71,
+          and give the order of growth (as a function of \\(n\\)) of the number
+          of steps needed to encode the most frequent and least frequent
+          symbols in the alphabet.
+
+        %data.q-a
+          %md
+            We first note that the most expensive operations in this procedure
+            is the search through the list at each level, and the `reverse` at
+            the end. The `reverse` is \\(\Theta(m)\\) where \\(m\\) is the
+            length of the code, and the search is \\(\Theta(k)\\) where \\(k\\)
+            is the length of the left branch at the current stage.
+
+            Since our sets are ordered by frequency (with the most frequent in
+            front), and the most frequent symbol is encoded as a single bit
+            each time (due to the distribution given in exercise 2.71), we know
+            that the very first left branch will be the leaf containing the
+            most frequent symbol. Also, since the code is only a single bit,
+            the `reverse` procedure can be done in constant time as well.
+            Hence we can encode the most frequent symbol in constant time, so
+            \\(\Theta(1)\\).
+
+            To encode the least fequent symbol, we would have to traverse the
+            lists all the way down to the end, but each time the left branch
+            has only one element in it, so the traversing would be
+            \\(\Theta(1)+\Theta(1)+...+\Theta(1)\\). The length of the code
+            will be the number of symbols in the list (i.e. \\(n\\)). So our
+            order of growth should be
+
+            $$\begin{align*}
+            &\Theta(n)+\underbrace{\Theta(1)+\Theta(1)+...+\Theta(1)}_{n-1\text{ times}}
+            \\\\=&\Theta(n)
+            \end{align*}$$
