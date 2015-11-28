@@ -1536,7 +1536,7 @@ samp {
 code {
   padding: 2px 4px;
   font-size: 90%;
-  color: #c7254e;
+  color: #0C5E71;
   background-color: #f9f2f4;
   border-radius: 4px;
 }
@@ -4635,8 +4635,8 @@ fieldset[disabled] .navbar-default .btn-link:focus {
   color: #ccc;
 }
 .navbar-inverse {
-  background-color: #A8A8A8;
-  border-color: #080808;
+  background-color: #FEFEFF;
+  border-color: #0C5E71;
 }
 .navbar-inverse .navbar-brand {
   color: #303030;
@@ -4644,7 +4644,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 .navbar-inverse .navbar-brand:hover,
 .navbar-inverse .navbar-brand:focus {
-  color: #fff;
+  color: #0C5E71;
   background-color: transparent;
 }
 .navbar-inverse .navbar-text {
@@ -4656,14 +4656,15 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
-  color: #fff;
+  color: #0C5E71;
   background-color: transparent;
 }
 .navbar-inverse .navbar-nav > .active > a,
 .navbar-inverse .navbar-nav > .active > a:hover,
 .navbar-inverse .navbar-nav > .active > a:focus {
   color: #fff;
-  background-color: #080808;
+  background-color: #0C5E71;
+  border-radius: 3px;
 }
 .navbar-inverse .navbar-nav > .disabled > a,
 .navbar-inverse .navbar-nav > .disabled > a:hover,
