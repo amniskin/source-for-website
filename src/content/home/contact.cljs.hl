@@ -11,25 +11,26 @@
         :target "_self" 
         :onsubmit ""
         (bootstrap/row
-          (let [good? (cell nil)] (div :class "col-xs-12 col-sm-6 col-md-6"
-                                       (div :class (cell= {:form-group true
-                                                           :has-success false
-                                                           :has-error   false
-                                                           :has-feedback true}) 
-                                            (label :for "entry.1351197672" 
-                                                   :class "control-label" "First Name")
-                                            (input :type "text" 
-                                                   :class "form-control" 
-                                                   :id "entry.1351197672" 
-                                                   :placeholder "First"
-                                                   :aria-describedby "first-nameStatus"
-                                                   :name "entry.1351197672")
-                                            (span :class (cell= {:glyphicon true 
-                                                                 :glyphicon-ok false
-                                                                 :glyphicon-remove false
-                                                                 :form-control-feedback true})
-                                                  :aria-hidden "true")
-                                            (span :id "first-nameStatus" :class "sr-only" "(success)"))))
+          (let [valid? (cell nil)]
+            (div :class "col-xs-12 col-sm-6 col-md-6"
+                 (div :class (cell= {:form-group true
+                                     :has-success false
+                                     :has-error   false
+                                     :has-feedback true}) 
+                      (label :for "entry.1351197672" 
+                             :class "control-label" "First Name")
+                      (input :type "text" 
+                             :class "form-control" 
+                             :id "entry.1351197672" 
+                             :placeholder "First"
+                             :aria-describedby "first-nameStatus"
+                             :name "entry.1351197672")
+                      (span :class (cell= {:glyphicon true 
+                                           :glyphicon-ok false
+                                           :glyphicon-remove false
+                                           :form-control-feedback true})
+                            :aria-hidden "true")
+                      (span :id "first-nameStatus" :class "sr-only" "(success)"))))
           (div :class "col-xs-12 col-sm-6 col-md-6"
                (div :class (cell= {:form-group true
                                    :has-success false
