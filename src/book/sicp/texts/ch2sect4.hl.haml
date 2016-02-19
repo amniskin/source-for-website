@@ -497,8 +497,45 @@
         and Alyssa had to change the names of their original procedures from
         section 2.4.1.
 
-        The issue underlying both of these weaknesses is that the technique for implementing generic interfaces is not additive. The person implementing the generic selector procedures must modify those procedures each time a new representation is installed, and the people interfacing the individual representations must modify their code to avoid name conflicts. In each of these cases, the changes that must be made to the code are straightforward, but they must be made nonetheless, and this is a source of inconvenience and error. This is not much of a problem for the complex-number system as it stands, but suppose there were not two but hundreds of different representations for complex numbers. And suppose that there were many generic selectors to be maintained in the abstract-data interface. Suppose, in fact, that no one programmer knew all the interface procedures or all the representations. The problem is real and must be addressed in such programs as large-scale data-base-management systems.
+        The issue underlying both of these weaknesses is that the technique for
+        implementing generic interfaces is not additive. The person
+        implementing the generic selector procedures must modify those
+        procedures each time a new representation is installed, and the people
+        interfacing the individual representations must modify their code to
+        avoid name conflicts. In each of these cases, the changes that must be
+        made to the code are straightforward, but they must be made
+        nonetheless, and this is a source of inconvenience and error. This is
+        not much of a problem for the complex-number system as it stands, but
+        suppose there were not two but hundreds of different representations
+        for complex numbers. And suppose that there were many generic selectors
+        to be maintained in the abstract-data interface. Suppose, in fact, that
+        no one programmer knew all the interface procedures or all the
+        representations. The problem is real and must be addressed in such
+        programs as large-scale data-base-management systems.
 
-        What we need is a means for modularizing the system design even further. This is provided by the programming technique known as data-directed programming. To understand how data-directed programming works, begin with the observation that whenever we deal with a set of generic operations that are common to a set of different types we are, in effect, dealing with a two-dimensional table that contains the possible operations on one axis and the possible types on the other axis. The entries in the table are the procedures that implement each operation for each type of argument presented. In the complex-number system developed in the previous section, the correspondence between operation name, data type, and actual procedure was spread out among the various conditional clauses in the generic interface procedures. But the same information could have been organized in a table, as shown in figure 2.22.
+        What we need is a means for modularizing the system design even
+        further. This is provided by the programming technique known as
+        data-directed programming. To understand how data-directed programming
+        works, begin with the observation that whenever we deal with a set of
+        generic operations that are common to a set of different types we are,
+        in effect, dealing with a two-dimensional table that contains the
+        possible operations on one axis and the possible types on the other
+        axis. The entries in the table are the procedures that implement each
+        operation for each type of argument presented. In the complex-number
+        system developed in the previous section, the correspondence between
+        operation name, data type, and actual procedure was spread out among
+        the various conditional clauses in the generic interface procedures.
+        But the same information could have been organized in a table, as shown
+        in figure 2.22.
 
-        Data-directed programming is the technique of designing programs to work with such a table directly. Previously, we implemented the mechanism that interfaces the complex-arithmetic code with the two representation packages as a set of procedures that each perform an explicit dispatch on type. Here we will implement the interface as a single procedure that looks up the combination of the operation name and argument type in the table to find the correct procedure to apply, and then applies it to the contents of the argument. If we do this, then to add a new representation package to the system we need not change any existing procedures; we need only add new entries to the table.
+        Data-directed programming is the technique of designing programs to
+        work with such a table directly. Previously, we implemented the
+        mechanism that interfaces the complex-arithmetic code with the two
+        representation packages as a set of procedures that each perform an
+        explicit dispatch on type. Here we will implement the interface as a
+        single procedure that looks up the combination of the operation name
+        and argument type in the table to find the correct procedure to apply,
+        and then applies it to the contents of the argument. If we do this,
+        then to add a new representation package to the system we need not
+        change any existing procedures; we need only add new entries to the
+        table.
